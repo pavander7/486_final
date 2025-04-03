@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import psycopg2 as ps2
 import json
+import config
 
 def load_json(input_dir):
     """Loads all json files from given input directory."""
@@ -20,61 +21,85 @@ def load_json(input_dir):
 def extract_key(lst, key):
     return [d.get(key) for d in lst]
 
+def rename_columns(df, prefix):
+    """Renames columns starting with 'openfda.' by removing the 'openfda.' prefix."""
+    new_columns = {
+        col: col.replace(prefix, '') for col in df.columns if col.startswith(prefix)
+    }
+    df.rename(columns=new_columns, inplace=True)
+    return df
+
 def process_json(data):
     """Processes list of dictionaries to DBMS-friendly format."""
     raw_df = pd.DataFrame(data)
 
     # step 1: select report cols
-    reports_cols = ['safetyreportversion', 'safetyreportid', 'primarysourcecountry', 
-                   'occurcountry', 'transmissiondateformat', 'transmissiondate', 'reporttype', 
-                   'serious', 'seriousnessdeath', 'seriousnesslifethreatening', 'seriousnesshospitalization', 
-                   'seriousnessdisabling', 'seriousnesscongenitalanomali', 'seriousnessother', 'patient', 'summary']
-    reports = raw_df.loc(reports_cols)
+    reports = raw_df[config.REPORT_COLS]
 
     # step 2: select patient cols
-    patients_cols = ['patientonsetage', 'patientonsetageunit', 'patientsex', 'patientweight', 'patientagegroup', 'drug', 'reaction'] 
-    reports = pd.concat([reports.drop('patient'), 
-                         pd.DataFrame(raw_df['patient']).loc(patients_cols)], axis=1)
-    reports['drug'] = reports['drug'].apply(extract_key, 'activesubstance')
-    reports['drug'] = reports['drug'].apply(extract_key, 'activesubstancename')
-
-    # step 3: select summary cols
-    reports['summary'] = reports['summary']['narrativeincludeclinical']
+    patient_df = pd.json_normalize(raw_df['patient'])
+    patient_df = patient_df[config.PATIENT_COLS]
+    reports = pd.concat([reports, patient_df], axis=1)
     
-    # step 4: create reactions table
-    reactions_cols = ['reactionmeddraversionpt', 'reactionmeddrapt', 'reactionoutcome']
-    reactions = raw_df['reaction'].explode().loc(reactions_cols)
+    # step 3: create reactions table
+    patient_df = pd.json_normalize(raw_df['patient'])
+    patient_df['safetyreportid'] = raw_df['safetyreportid']
 
-    # step 5: create drugs table
-    drugs_cols = ['drugcharacterization', 'medicinalproduct', 'drugdosagetext', 'drugadministrationroute', 'drugindication',
-                  'actiondrug', 'drugadditional', 'activesubstance', 'application_number', 'brand_name', 'generic_name',
-                  'manufacturer_name', 'product_ndc', 'product_type', 'route', 'substance_name', 'rxcui', 'spl_id', 'spl_set_id',
-                  'package_ndc', 'nui', 'pharm_class_epc', 'pharm_class_moa', 'unii']
-    drugs = raw_df['drug'].explode().loc(drugs_cols)
-    drugs['activesubstance'] = drugs['activesubstance']['activesubstancename']
+    reactions_exploded = patient_df.copy()  # Keep 'patient' data
+    reactions_exploded = reactions_exploded.explode('reaction').reset_index(drop=True)
+    reactions_normalized = pd.json_normalize(reactions_exploded['reaction'])
+    reactions = pd.concat([reactions_exploded.drop(columns=['reaction']), reactions_normalized], axis=1)
+    reactions = reactions[config.REACTION_COLS]
 
-    return {'reports': reports, 'reactions': reactions, 'drugs': drugs}
+    # step 4: create drugs table
+    drugs = pd.json_normalize(patient_df['drug'].explode())
+    drugs = rename_columns(drugs, 'openfda.')
+    drugs['activesubstance'] = drugs['activesubstance.activesubstancename']
+    drugs['administration_route'] = drugs['route']
+    drugs = drugs[config.DRUG_COLS]
 
-def insert_data(data):
-    """Inserts loaded json data into Postgres."""
+    # step 5: create drugreports table
+    drugreports = patient_df.explode('drug').reset_index(drop=True)
+    dr_normalized = pd.json_normalize(drugreports['drug'])
+    drugreports = pd.concat([dr_normalized, drugreports.drop(columns=['drug'])], axis=1)
+    drugreports['activesubstance'] = drugreports['activesubstance.activesubstancename']
+    drugreports = drugreports[config.DRUGREPORT_COLS]
+
+    return {'reports': reports, 'reactions': reactions, 'drugs': drugs, 'drugreports': drugreports}
+
+def insert_data(table_name, data):
+    """Inserts a Pandas DataFrame into a PostgreSQL table."""
     # Connect to the database
     conn = ps2.connect(
-        dbname="postgres",
-        user="paulvanderwoude",
-        host="localhost",  # Or your remote host
-        port="5432"        # Default PostgreSQL port
+        dbname=config.POSTGRES_DBNAME,
+        user=config.POSTGRES_USERNAME,
+        host=config.POSTGRES_HOSTNAME,
+        port=config.POSTGRES_PORT
     )
-
     cur = conn.cursor()
 
-    # stuff
+    # Extract column names from DataFrame
+    columns = ', '.join(data.columns)  
+    placeholders = ', '.join(['%s'] * len(data.columns))  
 
+    insert_query = f"INSERT INTO openFDA.{table_name} ({columns}) VALUES ({placeholders})"
+
+    # Convert DataFrame to list of tuples
+    records = data.itertuples(index=False, name=None)
+
+    # Execute batch insert
+    cur.executemany(insert_query, records)
+
+    # Commit and close
+    conn.commit()
     cur.close()
     conn.close()
 
 def main():
-    pd.set_option('display.max_columns', None)
-    return
+    dump = load_json(config.INPUT_DIR_PATH)
+    data = process_json(dump)
+    for name, table in data.items():
+        insert_data(name, table)
 
 if __name__ == "__main__":
     main()
