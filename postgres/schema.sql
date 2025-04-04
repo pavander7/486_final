@@ -37,7 +37,8 @@ CREATE TABLE openFDA.reactions (
     safteyreportid INT NOT NULL,
     reactionmeddraversionpt VARCHAR(10) NOT NULL,
     reactionmeddrapt VARCHAR(50) NOT NULL,
-    reactionoutcome SMALLINT
+    reactionoutcome SMALLINT,
+    FOREIGN KEY (safteyreportid) REFERENCES openFDA.reports(safteyreportid)
 );
 
 CREATE TABLE openFDA.drugs (
@@ -58,7 +59,7 @@ CREATE TABLE openFDA.drugs (
     product_type TEXT[],
     administration_route TEXT[],
     substance_name TEXT[],
-    rxcui INTEGER[],
+    rxcui TEXT[],
     spl_id TEXT[],
     spl_set_id TEXT[],
     package_ndc TEXT[],
@@ -73,4 +74,6 @@ CREATE TABLE openFDA.drugreports (
     drugid INT NOT NULL,
     safteyreportid INT NOT NULL,
     PRIMARY KEY (drugid, safteyreportid)
+    FOREIGN KEY (drugid) REFERENCES openFDA.drugs(drugid),
+    FOREIGN KEY (safteyreportid) REFERENCES openFDA.reports(safteyreportid)
 );
