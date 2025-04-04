@@ -1,7 +1,9 @@
+import json
 import os
+
 import pandas as pd
 import psycopg2 as ps2
-import json
+
 import config
 from helpers import rename_columns, convert_boolean, convert_numeric
 
@@ -49,6 +51,7 @@ def process_json(data):
     drugs['activesubstance'] = drugs['activesubstance.activesubstancename']
     drugs['administration_route'] = drugs['route']
     drugs = drugs[config.DRUG_COLS]
+    drugs = drugs.drop_duplicates(['activesubstance'])
 
     # step 5: create drugreports table
     drugreports = patient_df.explode('drug').reset_index(drop=True)
@@ -56,20 +59,18 @@ def process_json(data):
     drugreports = pd.concat([dr_normalized, drugreports.drop(columns=['drug'])], axis=1)
     drugreports['activesubstance'] = drugreports['activesubstance.activesubstancename']
     drugreports = drugreports[config.DRUGREPORT_COLS]
+    drugreports = drugreports.drop_duplicates()
 
     # PHASE TWO: fix dtypes
 
-    # step 1: booleans
+    # step 1: fill nans
+    reports = reports.where(pd.notnull(reports), None)
+    reactions = reactions.where(pd.notnull(reactions), None)
+    drugs = drugs.where(pd.notnull(drugs), None)
+    drugreports = drugreports.where(pd.notnull(drugreports), None)
+
+    # step 2: booleans
     reports = convert_boolean(reports, config.REPORT_BOOL)
-
-    # step 2 numerics
-    reports = convert_numeric(reports, config.REPORT_NUM)
-    reactions = convert_numeric(reactions, config.REACTION_NUM)
-    drugs = convert_numeric(drugs, config.DRUG_NUM)
-    drugreports = convert_numeric(drugreports, config.DRUGREPORT_NUM)
-
-    # PHASE THREE: deduplicate
-    drugs.drop_duplicates(['activesubstance'])
 
     return {'reports': reports, 'reactions': reactions, 'drugs': drugs, 'drugreports': drugreports}
 
@@ -83,6 +84,13 @@ def insert_data(table_name, data):
         port=config.POSTGRES_PORT
     )
     cur = conn.cursor()
+
+    # Convert NaN/None to None (Postgres will interpret these as NULL)
+    data = data.where(pd.notnull(data), None)  # Replaces NaNs with None (NULL in PostgreSQL)
+
+    numeric_columns = data.select_dtypes(include=['float', 'int']).columns
+    for col in numeric_columns:
+        data[col].apply(pd.to_numeric, errors='coerce')
 
     # Extract column names from DataFrame
     columns = ', '.join(data.columns)  
@@ -102,6 +110,7 @@ def insert_data(table_name, data):
     conn.close()
 
 def insert_dr(dr):
+    """Inserts the drugreports DataFrame into corresponding PostgreSQL table."""
     # Connect to the database
     conn = ps2.connect(
         dbname=config.POSTGRES_DBNAME,
@@ -110,6 +119,9 @@ def insert_dr(dr):
         port=config.POSTGRES_PORT
     )
     cur = conn.cursor()
+
+    # Convert NaN to None (Postgres will interpret these as NULL)
+    dr = dr.where(pd.notnull(dr), None)  # Replaces NaNs with None (NULL in PostgreSQL)
 
     # Step 1: Fetch drugid <-> activesubstance mapping from openFDA.drugs
     cur.execute("SELECT drugid, activesubstance FROM openFDA.drugs;")
@@ -157,15 +169,53 @@ def run_sql_file(filepath):
     cur.close()
     conn.close()
 
+def drop_schema_if_exists():
+    """Drops the specified schema if it exists."""
+    conn = ps2.connect(
+        dbname=config.POSTGRES_DBNAME,
+        user=config.POSTGRES_USERNAME,
+        host=config.POSTGRES_HOSTNAME,
+        port=config.POSTGRES_PORT
+    )
+    cur = conn.cursor()
+
+    schema_name = config.POSTGRES_SCHEMA
+
+    # Check if the schema exists
+    cur.execute("""
+        SELECT schema_name
+        FROM information_schema.schemata
+        WHERE schema_name = %s;
+    """, (schema_name,))
+    
+    exists = cur.fetchone()
+
+    if exists:
+        print(f"Schema '{schema_name}' exists — dropping it now")
+        cur.execute(f'DROP SCHEMA {schema_name} CASCADE;')
+        conn.commit()
+        print(f"Schema '{schema_name}' has been dropped")
+    else:
+        print(f"Schema '{schema_name}' does not exist")
+
+    cur.close()
+    conn.close()
+
 def main():
     dump = load_json(config.INPUT_DIR_PATH)
+    print(f'loaded {len(os.listdir(config.INPUT_DIR_PATH))} files from {config.INPUT_DIR_PATH}')
     data = process_json(dump)
-    dr = data['drugreports']
-    data = data.pop('drugreports')
+    print(f'processed {len(data['reports']) + len(data['reactions']) + len(data['drugs']) + len(data['drugreports'])} records')
+    dr = data.pop('drugreports')
+    drop_schema_if_exists()
     run_sql_file(config.SCHEMA_FILEPATH)
+    print('executed schema')
     for name, table in data.items():
         insert_data(name, table)
+        print(f'inserted {len(table)} records into openFDA.{name}')
     insert_dr(dr)
+    print(f'inserted {len(dr)} records into openFDA.drugreports')
+    print('\nDATALOADING COMPLETE.')
 
 if __name__ == "__main__":
     main()

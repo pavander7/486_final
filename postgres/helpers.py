@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 def rename_columns(df, prefix):
     """Renames columns starting with 'openfda.' by removing the 'openfda.' prefix."""
@@ -13,7 +12,7 @@ def convert_boolean (df, colnames, true_val = 2, false_val = 1):
     df = df.copy()
     for col in colnames:
         df[col] = df[col].apply(
-            lambda x: True if x == true_val else False if x == false_val else np.nan
+            lambda x: True if x == true_val else False if x == false_val else None
         )
     
     return df
@@ -22,3 +21,5 @@ def convert_numeric (df, colnames):
     df = df.copy()
     for col in colnames:
         df[col] = pd.to_numeric(df[col], errors='coerce')
+
+    return df

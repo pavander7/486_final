@@ -4,6 +4,7 @@ POSTGRES_DBNAME = 'postgres'
 POSTGRES_USERNAME = 'paulvanderwoude'
 POSTGRES_HOSTNAME = 'localhost'
 POSTGRES_PORT = '5432'
+POSTGRES_SCHEMA = "openfda"
 
 REPORT_COLS =       ['safetyreportid', 'safetyreportversion', 'primarysourcecountry', 'occurcountry', 'transmissiondateformat', 'transmissiondate', 'reporttype', 'serious', 'seriousnessdeath', 'seriousnesslifethreatening', 'seriousnesshospitalization', 'seriousnessdisabling', 'seriousnesscongenitalanomali', 'seriousnessother']
 PATIENT_COLS =      ['patientonsetage', 'patientonsetageunit', 'patientsex', 'patientweight', 'patientagegroup'] 
@@ -18,5 +19,5 @@ REACTION_NUM = ['reactionoutcome']
 DRUG_NUM = ['drugcharacterization', 'actiondrug', 'drugadditional']
 DRUGREPORT_NUM = ['safetyreportid']
 
-SCHEMA_FILEPATH = 'data/schema.sql'
-DROP_FILEPATH = 'data/drop.sql'
+SCHEMA_FILEPATH = 'postgres/schema.sql'
+DROP_FILEPATH = 'postgres/drop.sql'

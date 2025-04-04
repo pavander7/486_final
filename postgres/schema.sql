@@ -1,7 +1,7 @@
 CREATE SCHEMA openFDA;
 
 CREATE TABLE openFDA.reports (
-    reportid INT PRIMARY KEY,
+    safetyreportid INT PRIMARY KEY,
     safetyreportversion SMALLINT,
     primarysourcecountry CHAR(2),
     occurcountry CHAR(2),
@@ -25,32 +25,32 @@ CREATE TABLE openFDA.reports (
     companynumb VARCHAR(50),
     */
     -- source stuff goes here, going to skip it for now
-    patientonsetage SMALLINT,
+    patientonsetage REAL,
     patientonsetageunit SMALLINT,
-    patientsex CHAR(1),
-    patientweight SMALLINT,
+    patientsex SMALLINT,
+    patientweight REAL,
     patientagegroup SMALLINT
 );
 
 CREATE TABLE openFDA.reactions (
     reactionid SERIAL PRIMARY KEY,
-    safteyreportid INT NOT NULL,
+    safetyreportid INT NOT NULL,
     reactionmeddraversionpt VARCHAR(10) NOT NULL,
-    reactionmeddrapt VARCHAR(50) NOT NULL,
+    reactionmeddrapt TEXT NOT NULL,
     reactionoutcome SMALLINT,
-    FOREIGN KEY (safteyreportid) REFERENCES openFDA.reports(safteyreportid)
+    FOREIGN KEY (safetyreportid) REFERENCES openFDA.reports(safetyreportid)
 );
 
 CREATE TABLE openFDA.drugs (
     drugid SERIAL PRIMARY KEY,
     drugcharacterization SMALLINT,
-    medicinalproduct VARCHAR(25),
-    drugdosagetext VARCHAR(25),
-    drugadministrationroute VARCHAR(25),
-    drugindication VARCHAR(25),
+    medicinalproduct TEXT,
+    drugdosagetext TEXT,
+    drugadministrationroute TEXT,
+    drugindication TEXT,
     actiondrug SMALLINT,
     drugadditional SMALLINT,
-    activesubstance VARCHAR(25) UNIQUE,
+    activesubstance TEXT UNIQUE,
     application_number TEXT[],
     brand_name TEXT[],
     generic_name TEXT[],
@@ -66,14 +66,14 @@ CREATE TABLE openFDA.drugs (
     nui TEXT[],
     pharm_class_epc TEXT[],
     pharm_class_moa TEXT[],
-    unii TEXT[],
+    unii TEXT[]
     -- there's more info about dosage that i'm not including atm
 );
 
 CREATE TABLE openFDA.drugreports (
     drugid INT NOT NULL,
-    safteyreportid INT NOT NULL,
-    PRIMARY KEY (drugid, safteyreportid)
+    safetyreportid INT NOT NULL,
+    PRIMARY KEY (drugid, safetyreportid),
     FOREIGN KEY (drugid) REFERENCES openFDA.drugs(drugid),
-    FOREIGN KEY (safteyreportid) REFERENCES openFDA.reports(safteyreportid)
+    FOREIGN KEY (safetyreportid) REFERENCES openFDA.reports(safetyreportid)
 );
