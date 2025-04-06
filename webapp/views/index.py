@@ -1,6 +1,5 @@
-from flask import request, jsonify, render_template
-from webapp import app
-from webapp.views_bp import views_bp
+from flask import request, jsonify, render_template, current_app
+from . import views_bp
 from webapp.helpers import get_db_connection
 import psycopg2
 
@@ -41,10 +40,10 @@ def autocomplete():
 
     except psycopg2.DatabaseError as e:
         # Log and handle DB errors
-        app.logger.error(f"Database error: {e}")
+        current_app.logger.error(f"Database error: {e}")
         return jsonify({"error": "An error occurred while fetching data. Please try again later."}), 500
 
     except Exception as e:
         # Log and handle unexpected errors
-        app.logger.error(f"Unexpected error: {e}")
+        current_app.logger.error(f"Unexpected error: {e}")
         return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
