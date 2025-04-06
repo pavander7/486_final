@@ -12,30 +12,33 @@ def index():
 @views_bp.route('/autocomplete')
 def autocomplete():
     term = request.args.get('q', '')
-    
+
     if not term:
-        return jsonify({"error": "Query parameter 'q' is required."}), 400  # Return error if no query is provided
-    
+        return jsonify({"error": "Query parameter 'q' is required."}), 400
+
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT name, drugid
-            FROM medications
-            WHERE name ILIKE %s
-            ORDER BY name
+            SELECT DISTINCT med_name, drugid, source
+            FROM openFDA.medications
+            WHERE med_name ILIKE %s
+            ORDER BY med_name
             LIMIT 10
         """, (term + '%',))
         
-        results = [{'name': row[0], 'drugid': row[1]} for row in cursor.fetchall()]
+        results = [
+            {'name': row[0], 'drugid': row[1], 'source': row[2]}
+            for row in cursor.fetchall()
+        ]
         cursor.close()
         conn.close()
-        
+
         if not results:
-            return jsonify({"message": "No medications found for your query."}), 404  # Handle case when no results are found
-        
+            return jsonify({"message": "No medications found for your query."}), 404
+
         return jsonify(results)
-    
+
     except psycopg2.DatabaseError as e:
         # Log and handle DB errors
         app.logger.error(f"Database error: {e}")

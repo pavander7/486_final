@@ -42,3 +42,31 @@
     font-size: 1.2em;
     cursor: pointer;
 }
+
+.suggestions-box {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    max-height: 150px;
+    overflow-y: auto;
+    position: absolute;
+    background: white;
+    z-index: 10;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.suggestions-box li {
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.suggestions-box li.active {
+    background-color: #eef;
+    font-weight: bold;
+    cursor: pointer;
+}
