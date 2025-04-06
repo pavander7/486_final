@@ -2,7 +2,6 @@ import psycopg2
 from psycopg2 import sql
 from flask import current_app
 
-
 def get_db_connection():
     """Initialize the DB connection."""
     conn = psycopg2.connect(current_app.config['get_db_uri']())

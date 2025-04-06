@@ -1,13 +1,13 @@
-import psycopg2
 from flask import request, jsonify, render_template
-from webapp import app, views_bp
+from webapp import app
+from webapp.views_bp import views_bp
 from webapp.helpers import get_db_connection
+import psycopg2
 
 @views_bp.route('/')
 def index():
     # This route serves the main page (index.html) when users visit the home page
     return render_template('index.html')  # Render the index.html template
-
 
 @views_bp.route('/autocomplete')
 def autocomplete():
