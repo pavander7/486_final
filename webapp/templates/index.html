@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Medication Interaction Checker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <header>
+        <nav>
+            <a href="/">Home</a>
+            <span style="float: right">
+                <a href="/disclaimer/">disclaimer</a>
+            </span>
+        </nav>
+    </header>
+
+    <main>
+        <form id="med-form" class="search_bar" action="/interaction-results/" method="POST">
+            <input
+                type="text"
+                id="med-input"
+                placeholder="Type a medication and press Enter"
+                list="med-suggestions"
+                autocomplete="off"
+            />
+            <datalist id="med-suggestions">
+                <!-- dynamically filled -->
+            </datalist>
+            <button type="submit" id="submit-btn">Submit</button>
+        </form>
+
+        <ul id="med-list" class="med-list"></ul>
+
+        <input type="hidden" name="meds" id="hidden-meds" form="med-form" />
+    </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
