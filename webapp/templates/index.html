@@ -17,6 +17,7 @@
     </header>
 
     <main>
+        <!-- Form for submitting a medication search -->
         <form id="med-form" class="search_bar" action="/interaction-results/" method="POST">
             <input
                 type="text"
@@ -28,11 +29,17 @@
             <datalist id="med-suggestions">
                 <!-- dynamically filled -->
             </datalist>
+            
             <button type="submit" id="submit-btn">Submit</button>
         </form>
 
+        <!-- Feedback message area -->
+        <div id="feedback" style="color: #999; font-size: 0.9em;"></div>
+
+        <!-- List of selected medications -->
         <ul id="med-list" class="med-list"></ul>
 
+        <!-- Hidden input to store the selected medications (for form submission) -->
         <input type="hidden" name="meds" id="hidden-meds" form="med-form" />
     </main>
 
