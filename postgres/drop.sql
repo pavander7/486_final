@@ -1,3 +1,5 @@
+DROP VIEW openFDA.medications;
+
 DROP TABLE openFDA.drugreports;
 DROP TABLE openFDA.reactions;
 DROP TABLE openFDA.drugs;
