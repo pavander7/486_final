@@ -70,3 +70,9 @@
     font-weight: bold;
     cursor: pointer;
 }
+
+em {
+    font-style: italic;
+    color: #777;
+    font-size: 0.85em;
+}

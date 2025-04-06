@@ -39,7 +39,10 @@ function addMedication(medName) {
     const li = document.createElement('li');
     li.className = 'med-item';
     li.innerHTML = `
-        <span>${sourceIcons[entry.source] || '❔'} ${medName}</span>
+        <span>
+            ${sourceIcons[entry.source] || '❔'} ${medName} 
+            <em style="color: #888; font-size: 0.85em;">(${entry.source.replace('_', ' ')})</em>
+        </span>
         <button class="remove-btn" aria-label="Remove">✖</button>
     `;
 
@@ -74,7 +77,7 @@ medInput.addEventListener('input', async function () {
                 const li = document.createElement('li');
                 li.innerHTML = `
                     <span>${sourceIcons[source] || '❔'}</span>
-                    <span>${med_name}</span>
+                    <span>${med_name} <em style="color: #888; font-size: 0.85em;">(${source.replace('_', ' ')})</em></span>
                 `;
                 li.addEventListener('click', () => addMedication(med_name));
                 suggestionsBox.appendChild(li);
