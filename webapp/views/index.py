@@ -20,14 +20,14 @@ def autocomplete():
         cursor = conn.cursor()
         cursor.execute("""
             SELECT DISTINCT med_name, drugid, source
-            FROM openFDA.medications
+            FROM openfda.medications
             WHERE med_name ILIKE %s
             ORDER BY med_name
             LIMIT 10
         """, (term + '%',))
         
         results = [
-            {'name': row[0], 'drugid': row[1], 'source': row[2]}
+            {'med_name': row[0], 'drugid': row[1], 'source': row[2]}
             for row in cursor.fetchall()
         ]
         cursor.close()

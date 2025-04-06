@@ -51,7 +51,7 @@ def process_json(data):
     drugs['activesubstance'] = drugs['activesubstance.activesubstancename']
     drugs['administration_route'] = drugs['route']
     drugs = drugs[config.DRUG_COLS]
-    drugs = drugs.drop_duplicates(['activesubstance'])
+    drugs = drugs.drop_duplicates(['activesubstance']).dropna(subset=['activesubstance'])
 
     # step 5: create drugreports table
     drugreports = patient_df.explode('drug').reset_index(drop=True)
