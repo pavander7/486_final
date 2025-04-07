@@ -136,13 +136,16 @@ def insert_dr(dr):
     cur.close()
     conn.close()
 
-def run_sql_file(filepath):
+def init_schema():
+    # Delete schema if needed
+    drop_schema_if_exists()
+
     # Connect to the database
     conn = get_db_conn()
     cur = conn.cursor()
 
     # Read and execute schema file
-    with open(filepath, 'r') as f:
+    with open(SCHEMA_FILEPATH, 'r') as f:
         sql = f.read()
 
     # Split commands by semicolon and execute each (ignoring empty ones)
@@ -170,30 +173,35 @@ def drop_schema_if_exists(verbose=True):
     exists = cur.fetchone()
 
     if exists:
-        print(f"Schema '{POSTGRES_SCHEMA}' exists — dropping it now")
+        # print(f"Schema '{POSTGRES_SCHEMA}' exists — dropping it now")
         cur.execute(f'DROP SCHEMA {POSTGRES_SCHEMA} CASCADE;')
         conn.commit()
-        print(f"Schema '{POSTGRES_SCHEMA}' has been dropped")
-    else:
-        print(f"Schema '{POSTGRES_SCHEMA}' does not exist")
+        # print(f"Schema '{POSTGRES_SCHEMA}' has been dropped")
+    # else:
+        # print(f"Schema '{POSTGRES_SCHEMA}' does not exist")
 
     cur.close()
     conn.close()
 
 def main():
-    dump = load_json(INPUT_DIR_PATH)
+    raw = load_json(INPUT_DIR_PATH)
     print(f'loaded {len(os.listdir(INPUT_DIR_PATH))} files from {INPUT_DIR_PATH}')
-    data = process_json(dump)
+
+    data = process_json(raw)
     print(f'processed {len(data['reports']) + len(data['reactions']) + len(data['drugs']) + len(data['drugreports'])} records')
+
     dr = data.pop('drugreports')
-    drop_schema_if_exists()
-    run_sql_file(SCHEMA_FILEPATH)
+
+    init_schema()
     print('executed schema')
+
     for name, table in data.items():
         insert_data(name, table)
         print(f'inserted {len(table)} records into openFDA.{name}')
+    
     insert_dr(dr)
     print(f'inserted {len(dr)} records into openFDA.drugreports')
+    
     print('\nDATALOADING COMPLETE.')
 
 if __name__ == "__main__":
