@@ -10,10 +10,10 @@ const meds = [];
 let activeIndex = -1;
 
 const sourceIcons = {
-    brand_name: "💊",
-    generic_name: "📦",
-    activesubstance: "🧪",
-    substance_name: "🔬"
+    'brand name': "💊",
+    'generic name': "📦",
+    'active ingredient': "🧪",
+    'substance name': "🔬"
 };
 
 medInput.focus(); // Auto-focus on page load

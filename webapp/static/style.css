@@ -1,0 +1,148 @@
+/* Base layout and font */
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+    font-size: 1.1em;
+    color: #00274C; /* U-M Blue */
+}
+
+/* Header/nav bar */
+header {
+    background-color: #00274C; /* U-M Blue */
+    color: #FFCB05; /* Maize */
+    padding: 1em;
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
+    letter-spacing: 1px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Center the whole search unit */
+main {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin-top: 4em;
+    padding: 0 1em;
+}
+
+/* Search bar area */
+.search_bar {
+    display: flex;
+    gap: 10px;
+    width: 600px;
+    margin-bottom: 1em;
+    position: relative;
+}
+
+/* Input field */
+#med-input {
+    flex: 1;
+    padding: 12px;
+    font-size: 1.1em;
+    border: 2px solid #00274C;
+    border-radius: 6px;
+}
+
+/* Submit button */
+#submit-btn {
+    padding: 12px 20px;
+    font-size: 1.1em;
+    background-color: #FFCB05;
+    color: #00274C;
+    border: 2px solid #00274C;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
+#submit-btn:hover {
+    background-color: #f9c425;
+}
+
+/* Suggestions box */
+.suggestions-box {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #00274C;
+    border-radius: 6px;
+    max-height: 180px;
+    overflow-y: auto;
+    z-index: 10;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.suggestions-box li {
+    padding: 10px 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.05em;
+}
+
+.suggestions-box li.active {
+    background-color: #FFCB05;
+    color: #00274C;
+    font-weight: bold;
+}
+
+/* Medication list container */
+.med-list-container {
+    margin-top: 2em;
+    width: 600px;
+    background-color: #fff;
+    border: 2px solid #00274C;
+    border-radius: 6px;
+    padding: 1em;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Medication list items */
+.med-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.med-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #e9f0f6;
+    margin-bottom: 8px;
+    padding: 10px 14px;
+    border-left: 5px solid #00274C;
+    border-radius: 4px;
+}
+
+.remove-btn {
+    background: none;
+    border: none;
+    color: red;
+    font-size: 1.2em;
+    cursor: pointer;
+}
+
+em {
+    font-style: italic;
+    color: #555;
+    font-size: 0.9em;
+}
+
+/* Feedback message */
+#feedback {
+    margin-top: 0.5em;
+    color: #d00;
+    font-weight: bold;
+}
