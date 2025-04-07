@@ -2,10 +2,10 @@ import json
 import os
 
 import pandas as pd
-import psycopg2 as ps2
 
-import config
-from helpers import rename_columns, convert_boolean, convert_numeric
+from config import REPORT_COLS, PATIENT_COLS, REACTION_COLS, DRUG_COLS, DRUGREPORT_COLS, REPORT_BOOL_COLS
+from config import SCHEMA_FILEPATH, INPUT_DIR_PATH, POSTGRES_SCHEMA
+from helpers import get_db_conn, rename_columns, convert_boolean
 
 def load_json(input_dir):
     """Loads all json files from given input directory."""
@@ -14,10 +14,11 @@ def load_json(input_dir):
     for filename in os.listdir(input_dir):
         file_path = os.path.join(input_dir, filename)
 
-        with open(file_path, 'r', encoding='utf-8') as file:
-            dump = json.load(file)  # contains 'meta' and 'results'
-            results = dump["results"]  # separate the results from the meta
-            data.extend(results)
+        if file_path.endswith('.json'):
+            with open(file_path, 'r', encoding='utf-8') as file:
+                dump = json.load(file)  # contains 'meta' and 'results'
+                results = dump["results"]  # separate the results from the meta
+                data.extend(results)
     
     return data
 
@@ -28,11 +29,11 @@ def process_json(data):
     # PHASE ONE: create tables
 
     # step 1: select report cols
-    reports = raw_df[config.REPORT_COLS]
+    reports = raw_df[REPORT_COLS]
 
     # step 2: select patient cols
     patient_df = pd.json_normalize(raw_df['patient'])
-    patient_df = patient_df[config.PATIENT_COLS]
+    patient_df = patient_df[PATIENT_COLS]
     reports = pd.concat([reports, patient_df], axis=1)
     
     # step 3: create reactions table
@@ -43,14 +44,14 @@ def process_json(data):
     reactions_exploded = reactions_exploded.explode('reaction').reset_index(drop=True)
     reactions_normalized = pd.json_normalize(reactions_exploded['reaction'])
     reactions = pd.concat([reactions_exploded.drop(columns=['reaction']), reactions_normalized], axis=1)
-    reactions = reactions[config.REACTION_COLS]
+    reactions = reactions[REACTION_COLS]
 
     # step 4: create drugs table
     drugs = pd.json_normalize(patient_df['drug'].explode())
     drugs = rename_columns(drugs, 'openfda.')
     drugs['activesubstance'] = drugs['activesubstance.activesubstancename']
     drugs['administration_route'] = drugs['route']
-    drugs = drugs[config.DRUG_COLS]
+    drugs = drugs[DRUG_COLS]
     drugs = drugs.drop_duplicates(['activesubstance']).dropna(subset=['activesubstance'])
 
     # step 5: create drugreports table
@@ -58,7 +59,7 @@ def process_json(data):
     dr_normalized = pd.json_normalize(drugreports['drug'])
     drugreports = pd.concat([dr_normalized, drugreports.drop(columns=['drug'])], axis=1)
     drugreports['activesubstance'] = drugreports['activesubstance.activesubstancename']
-    drugreports = drugreports[config.DRUGREPORT_COLS]
+    drugreports = drugreports[DRUGREPORT_COLS]
     drugreports = drugreports.drop_duplicates()
 
     # PHASE TWO: fix dtypes
@@ -70,19 +71,14 @@ def process_json(data):
     drugreports = drugreports.where(pd.notnull(drugreports), None)
 
     # step 2: booleans
-    reports = convert_boolean(reports, config.REPORT_BOOL)
+    reports = convert_boolean(reports, REPORT_BOOL_COLS)
 
     return {'reports': reports, 'reactions': reactions, 'drugs': drugs, 'drugreports': drugreports}
 
 def insert_data(table_name, data):
     """Inserts a Pandas DataFrame into a PostgreSQL table."""
     # Connect to the database
-    conn = ps2.connect(
-        dbname=config.POSTGRES_DBNAME,
-        user=config.POSTGRES_USERNAME,
-        host=config.POSTGRES_HOSTNAME,
-        port=config.POSTGRES_PORT
-    )
+    conn = get_db_conn()
     cur = conn.cursor()
 
     # Convert NaN/None to None (Postgres will interpret these as NULL)
@@ -112,12 +108,7 @@ def insert_data(table_name, data):
 def insert_dr(dr):
     """Inserts the drugreports DataFrame into corresponding PostgreSQL table."""
     # Connect to the database
-    conn = ps2.connect(
-        dbname=config.POSTGRES_DBNAME,
-        user=config.POSTGRES_USERNAME,
-        host=config.POSTGRES_HOSTNAME,
-        port=config.POSTGRES_PORT
-    )
+    conn = get_db_conn()
     cur = conn.cursor()
 
     # Convert NaN to None (Postgres will interpret these as NULL)
@@ -147,12 +138,7 @@ def insert_dr(dr):
 
 def run_sql_file(filepath):
     # Connect to the database
-    conn = ps2.connect(
-        dbname=config.POSTGRES_DBNAME,
-        user=config.POSTGRES_USERNAME,
-        host=config.POSTGRES_HOSTNAME,
-        port=config.POSTGRES_PORT
-    )
+    conn = get_db_conn()
     cur = conn.cursor()
 
     # Read and execute schema file
@@ -169,46 +155,39 @@ def run_sql_file(filepath):
     cur.close()
     conn.close()
 
-def drop_schema_if_exists():
+def drop_schema_if_exists(verbose=True):
     """Drops the specified schema if it exists."""
-    conn = ps2.connect(
-        dbname=config.POSTGRES_DBNAME,
-        user=config.POSTGRES_USERNAME,
-        host=config.POSTGRES_HOSTNAME,
-        port=config.POSTGRES_PORT
-    )
+    conn = get_db_conn()
     cur = conn.cursor()
-
-    schema_name = config.POSTGRES_SCHEMA
 
     # Check if the schema exists
     cur.execute("""
         SELECT schema_name
         FROM information_schema.schemata
         WHERE schema_name = %s;
-    """, (schema_name,))
+    """, (POSTGRES_SCHEMA,))
     
     exists = cur.fetchone()
 
     if exists:
-        print(f"Schema '{schema_name}' exists — dropping it now")
-        cur.execute(f'DROP SCHEMA {schema_name} CASCADE;')
+        print(f"Schema '{POSTGRES_SCHEMA}' exists — dropping it now")
+        cur.execute(f'DROP SCHEMA {POSTGRES_SCHEMA} CASCADE;')
         conn.commit()
-        print(f"Schema '{schema_name}' has been dropped")
+        print(f"Schema '{POSTGRES_SCHEMA}' has been dropped")
     else:
-        print(f"Schema '{schema_name}' does not exist")
+        print(f"Schema '{POSTGRES_SCHEMA}' does not exist")
 
     cur.close()
     conn.close()
 
 def main():
-    dump = load_json(config.INPUT_DIR_PATH)
-    print(f'loaded {len(os.listdir(config.INPUT_DIR_PATH))} files from {config.INPUT_DIR_PATH}')
+    dump = load_json(INPUT_DIR_PATH)
+    print(f'loaded {len(os.listdir(INPUT_DIR_PATH))} files from {INPUT_DIR_PATH}')
     data = process_json(dump)
     print(f'processed {len(data['reports']) + len(data['reactions']) + len(data['drugs']) + len(data['drugreports'])} records')
     dr = data.pop('drugreports')
     drop_schema_if_exists()
-    run_sql_file(config.SCHEMA_FILEPATH)
+    run_sql_file(SCHEMA_FILEPATH)
     print('executed schema')
     for name, table in data.items():
         insert_data(name, table)

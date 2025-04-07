@@ -1,4 +1,15 @@
-import pandas as pd
+import psycopg2
+
+from config import POSTGRES_DBNAME, POSTGRES_USERNAME, POSTGRES_HOSTNAME, POSTGRES_PORT
+
+def get_db_conn():
+    """Connects to PostgreSQL DB."""
+    return psycopg2.connect(
+        dbname=POSTGRES_DBNAME,
+        host=POSTGRES_HOSTNAME,
+        user=POSTGRES_USERNAME,
+        port=POSTGRES_PORT
+    )
 
 def rename_columns(df, prefix):
     """Renames columns starting with 'openfda.' by removing the 'openfda.' prefix."""
@@ -15,11 +26,4 @@ def convert_boolean (df, colnames, true_val = 2, false_val = 1):
             lambda x: True if x == true_val else False if x == false_val else None
         )
     
-    return df
-
-def convert_numeric (df, colnames):
-    df = df.copy()
-    for col in colnames:
-        df[col] = pd.to_numeric(df[col], errors='coerce')
-
     return df
