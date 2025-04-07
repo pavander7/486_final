@@ -18,15 +18,23 @@ header {
     font-weight: bold;
     letter-spacing: 1px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    min-height: 1.5em;
 }
 
 /* Center the whole search unit */
 main {
     display: flex;
     justify-content: center;
+    flex-direction: row;
     align-items: flex-start;
     margin-top: 4em;
     padding: 0 1em;
+}
+
+.search_area {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 /* Search bar area */
@@ -79,6 +87,7 @@ main {
     list-style: none;
     padding: 0;
     margin: 0;
+    width: 600px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
@@ -100,7 +109,7 @@ main {
 /* Medication list container */
 .med-list-container {
     margin-top: 2em;
-    width: 600px;
+    width: 32em;
     background-color: #fff;
     border: 2px solid #00274C;
     border-radius: 6px;

@@ -9,7 +9,9 @@
 <body>
     <header>
         <nav>
-            <a href="/">Home</a>
+            <span style="float: left">
+                <a href="/">Medication Interaction Checker</a>
+            </span>
             <span style="float: right">
                 <a href="/disclaimer/">disclaimer</a>
             </span>
@@ -17,33 +19,35 @@
     </header>
 
     <main>
-        <!-- Form for submitting a medication search -->
-        <form id="med-form" class="search_bar" action="/interaction-results/" method="POST">
-            <input
-                type="text"
-                id="med-input"
-                placeholder="Type a medication and press Enter"
-                list="med-suggestions"
-                autocomplete="off"
-            />
+        <div class="search-area">
+            <!-- Form for submitting a medication search -->
+            <form id="med-form" class="search_bar" action="/interaction-results/" method="POST">
+                <input
+                    type="text"
+                    id="med-input"
+                    placeholder="Type a medication and press Enter"
+                    list="med-suggestions"
+                    autocomplete="off"
+                />
 
-            <!-- Custom suggestion box -->
-            <ul id="suggestions-box" class="suggestions-box"></ul>
+                <!-- Custom suggestion box -->
+                <ul id="suggestions-box" class="suggestions-box"></ul>
 
 
-            <button type="submit" id="submit-btn">Submit</button>
-        </form>
+                <button type="submit" id="submit-btn">Submit</button>
+            </form>
 
-        <!-- Feedback message area -->
-        <div id="feedback" style="color: #999; font-size: 0.9em;"></div>
+            <!-- Feedback message area -->
+            <div id="feedback" style="color: #999; font-size: 0.9em;"></div>
 
-        <!-- List of selected medications -->
-        <div class="med-list-container">
-            <ul class="med-list" id="med-list"></ul>
+            <!-- List of selected medications -->
+            <div class="med-list-container">
+                <ul class="med-list" id="med-list"></ul>
+            </div>
+
+            <!-- Hidden input to store the selected medications (for form submission) -->
+            <input type="hidden" name="meds" id="hidden-meds" form="med-form" />
         </div>
-
-        <!-- Hidden input to store the selected medications (for form submission) -->
-        <input type="hidden" name="meds" id="hidden-meds" form="med-form" />
     </main>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
