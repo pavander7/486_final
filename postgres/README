@@ -1,0 +1,34 @@
+# POSTGRESQL DATALOADER PIPELINE
+
+This package will load data from openFDA into a PostgreSQL database for the purposes of information retrieval. It can be used one of two ways:
+
+1. Running postgres.py will download files from the internet and batch process and add them to PSQL.
+2. Running preprocess.py will import files from a local directory and bulk process and add them to PSQL.
+
+## config.py
+
+This file contains the configuration details for the functions in this package.
+
+## postgres.py
+
+This is the main driver function. Adding '-i' in the command line will (re)initialize the schema, otherwise the program will assume the database is properly set up. DEBUG_LIMIT in config can be altered to process only a subset of the files.
+
+## preprocess.py
+
+This file contains all preprocessing functions, as well as a driver for using local data files. The directory containing the data files is specified by INPUT_DIR_PATH in config. There are six functions in this file: load_json, process_json, insert_data, insert_dr, init_schema, and drop_schema_if_exists.
+
+## downloader.py
+
+This file defines the Downloader class, which pulls data from the links found in LINK_FILE.
+
+## helpers.py
+
+This file includes three helper functions: get_db_conn, rename_columns, and convert_boolean.
+
+## schema.sql
+
+This file will define the full schema needed for postgres.py and preprocess.py.
+
+## drop.sql
+
+This file will drop all views, tables, and schemas created by schema.sql.
