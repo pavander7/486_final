@@ -1,13 +1,12 @@
-import json
 import os
 
 import pandas as pd
+import requests
 
 from postgres.config import LABEL_LINK_FILE, EVENT_LINK_FILE, INPUT_DIR_PATH
 
-
-with open('openFDAlinks.json', 'r', encoding='utf-8') as link_json:
-    raw = json.load(link_json)['results']['drug']
+link_json = requests.get('https://api.fda.gov/download.json').json()
+raw = link_json['results']['drug']
 
 label_full = raw['label']
 
