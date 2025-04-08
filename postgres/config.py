@@ -1,6 +1,7 @@
 # DATA PATHS
 INPUT_DIR_PATH = 'data'
-LINK_FILE = 'links.txt'
+EVENT_LINK_FILE = 'event_links.txt'
+LABEL_LINK_FILE = 'label_links.txt'
 
 # COLNAMES FOR PROCESSING
 REPORT_COLS =       ['safetyreportid', 'safetyreportversion', 'primarysourcecountry', 'occurcountry', 'transmissiondateformat', 'transmissiondate', 'reporttype', 'serious', 'seriousnessdeath', 'seriousnesslifethreatening', 'seriousnesshospitalization', 'seriousnessdisabling', 'seriousnesscongenitalanomali', 'seriousnessother']
@@ -22,4 +23,5 @@ SCHEMA_FILEPATH = 'postgres/schema.sql'
 DROP_FILEPATH = 'postgres/drop.sql'
 
 # DEBUG TOOLS
-DEBUG_LIMIT = None
+EVENT_FILE_LIMIT = 3
+LABEL_FILE_LIMIT = 3

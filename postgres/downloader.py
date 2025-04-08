@@ -1,11 +1,9 @@
 import requests
 
-from config import LINK_FILE
-
 class Downloader:
-    def __init__(self):
+    def __init__(self, file):
         self.links = []
-        with open(LINK_FILE, 'r', encoding='utf-8') as file:
+        with open(file, 'r', encoding='utf-8') as file:
             self.links.append(file.readline())
     
     def get(self):

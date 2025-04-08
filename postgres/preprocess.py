@@ -22,7 +22,7 @@ def load_json(input_dir):
     
     return data
 
-def process_json(data):
+def process_event_json(data):
     """Processes list of dictionaries to DBMS-friendly format."""
     raw_df = pd.DataFrame(data)
 
@@ -187,7 +187,7 @@ def main():
     raw = load_json(INPUT_DIR_PATH)
     print(f'loaded {len(os.listdir(INPUT_DIR_PATH))} files from {INPUT_DIR_PATH}')
 
-    data = process_json(raw)
+    data = process_event_json(raw)
     print(f'processed {len(data['reports']) + len(data['reactions']) + len(data['drugs']) + len(data['drugreports'])} records')
 
     dr = data.pop('drugreports')
