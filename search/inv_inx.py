@@ -30,7 +30,13 @@ def construct_inv_idx(drugs):
     return idx
 
 def main():
-    pass
+    with open('search/inv_idx.txt', 'w') as file:
+        results = construct_inv_idx(
+            collect_drugs()
+        )
+        for drug, docs in results.items():
+            line = f'{drug}: {docs.join(', ')}\n'
+            file.write(line)
 
 if __name__ == "__main__":
     main()
