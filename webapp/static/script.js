@@ -80,7 +80,7 @@ medInput.addEventListener('input', async function () {
         feedback.textContent = '';
 
         if (response.ok && suggestions.length > 0) {
-            suggestions.forEach(({ med_name, drugid, source }) => {
+            suggestions.forEach(({ med_name, drugid, source, brand_name = [], generic_name = [] }) => {
                 const li = document.createElement('li');
                 li.innerHTML = `
                     <span>${sourceIcons[source] || '❔'}</span>
@@ -88,13 +88,13 @@ medInput.addEventListener('input', async function () {
                 `;
                 li.addEventListener('click', () => addMedication(med_name));
                 suggestionsBox.appendChild(li);
+            
                 drugMap.set(med_name.toLowerCase(), {
                     drugid,
                     source,
-                    brand_name,
-                    generic_name
+                    brand_names,
+                    generic_names
                 });
-                
             });
         } else {
             feedback.textContent = suggestions.message || suggestions.error || 'No medications found.';

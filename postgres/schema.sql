@@ -116,6 +116,7 @@ CREATE TABLE openFDA.drugs (
     substance_name TEXT[], 
     rxcui TEXT[], 
     spl_id TEXT[], 
+    spl_id_primary TEXT,
     spl_set_id TEXT[], 
     package_ndc TEXT[], 
     nui TEXT[], 
