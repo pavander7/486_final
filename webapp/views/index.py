@@ -19,7 +19,7 @@ def autocomplete():
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT DISTINCT med_name, drugid, source
+            SELECT DISTINCT med_name, drugid, generic_name, brand_name, source
             FROM openfda.medications
             WHERE med_name ILIKE %s
             ORDER BY med_name
@@ -27,7 +27,7 @@ def autocomplete():
         """, (term + '%',))
         
         results = [
-            {'med_name': row[0], 'drugid': row[1], 'source': row[2]}
+            {'med_name': row[0], 'drugid': row[1], 'generic_name': row[2], 'brand_name': row[3], 'source': row[4]}
             for row in cursor.fetchall()
         ]
         cursor.close()

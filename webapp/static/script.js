@@ -11,9 +11,7 @@ let activeIndex = -1;
 
 const sourceIcons = {
     'brand name': "💊",
-    'generic name': "📦",
-    'active ingredient': "🧪",
-    'substance name': "🔬"
+    'generic name': "📦"
 };
 
 medInput.focus(); // Auto-focus on page load
@@ -30,18 +28,26 @@ function highlightSuggestion(index) {
     });
 }
 
-function addMedication(medName) {
-    const entry = drugMap.get(medName.toLowerCase());
+function addMedication(originalMedName) {
+    const entry = drugMap.get(originalMedName.toLowerCase());
     if (!entry || meds.includes(entry.drugid)) return;
 
     meds.push(entry.drugid);
 
+    const genericToShow = entry.generic_name?.[0] || originalMedName;
+
+    const tooltipText = [
+        `💊 Brand name(s): ${entry.brand_name?.join(', ') || 'N/A'}`,
+        `📦 Generic name(s): ${entry.generic_name?.join(', ') || 'N/A'}`
+    ].join('\n');
+
     const li = document.createElement('li');
     li.className = 'med-item';
+    li.setAttribute('title', tooltipText);
     li.innerHTML = `
         <span>
-            ${sourceIcons[entry.source] || '❔'} ${medName} 
-            <em style="color: #888; font-size: 0.85em;">(${entry.source.replace('_', ' ')})</em>
+            📦 ${genericToShow}
+            <em style="color: #888; font-size: 0.85em;">(generic)</em>
         </span>
         <button class="remove-btn" aria-label="Remove">✖</button>
     `;
@@ -56,6 +62,7 @@ function addMedication(medName) {
     medInput.value = '';
     clearSuggestions();
 }
+
 
 medInput.addEventListener('input', async function () {
     const query = medInput.value.trim();
@@ -81,7 +88,13 @@ medInput.addEventListener('input', async function () {
                 `;
                 li.addEventListener('click', () => addMedication(med_name));
                 suggestionsBox.appendChild(li);
-                drugMap.set(med_name.toLowerCase(), { drugid, source });
+                drugMap.set(med_name.toLowerCase(), {
+                    drugid,
+                    source,
+                    brand_name,
+                    generic_name
+                });
+                
             });
         } else {
             feedback.textContent = suggestions.message || suggestions.error || 'No medications found.';

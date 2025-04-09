@@ -133,19 +133,13 @@ CREATE TABLE openFDA.drugreports (
 );
 
 CREATE OR REPLACE VIEW openFDA.medications AS (
-    SELECT drugid, a AS med_name, 'substance name' AS source
-    FROM openFDA.drugs, unnest(active_ingredient) AS a
-    WHERE a IS NOT NULL AND a <> ''
-
-    UNION
-
-    SELECT drugid, b AS med_name, 'brand name' AS source
+    SELECT drugid, b AS med_name, 'brand name' AS source, brand_name, generic_name
     FROM openFDA.drugs, unnest(brand_name) AS b
     WHERE b IS NOT NULL AND b <> ''
 
     UNION
 
-    SELECT drugid, g AS med_name, 'generic name' AS source
+    SELECT drugid, g AS med_name, 'generic name' AS source, brand_name, generic_name
     FROM openFDA.drugs, unnest(generic_name) AS g
     WHERE g IS NOT NULL AND g <> ''
 );

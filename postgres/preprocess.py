@@ -155,7 +155,8 @@ def insert_dr(dr):
     merged = dr.merge(drug_map, on='spl_id', how='left')
 
     # Step 3: Keep only necessary columns
-    insert_df = merged[['safetyreportid', 'drugid']].dropna().drop_duplicates()
+    insert_df = merged[['safetyreportid', 'drugid']]
+    insert_df = insert_df.dropna().drop_duplicates() #remove nas and duplicates
 
     # Convert DataFrame to list of tuples
     records = insert_df.itertuples(index=False, name=None)
@@ -237,8 +238,8 @@ def main():
         insert_data(name, table)
         print(f'inserted {len(table)} records into openFDA.{name}')
     
-    insert_dr(dr)
-    print(f'inserted {len(dr)} records into openFDA.drugreports')
+    # insert_dr(dr)
+    # print(f'inserted {len(dr)} records into openFDA.drugreports')
     
     print('\nDATALOADING COMPLETE.')
 
