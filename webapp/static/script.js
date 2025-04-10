@@ -28,26 +28,24 @@ function highlightSuggestion(index) {
     });
 }
 
-function addMedication(originalMedName) {
-    const entry = drugMap.get(originalMedName.toLowerCase());
+function addMedication(medName) {
+    const entry = drugMap.get(medName.toLowerCase());
     if (!entry || meds.includes(entry.drugid)) return;
 
     meds.push(entry.drugid);
 
-    const genericToShow = entry.generic_name?.[0] || originalMedName;
-
-    const tooltipText = [
-        `💊 Brand name(s): ${entry.brand_name?.join(', ') || 'N/A'}`,
-        `📦 Generic name(s): ${entry.generic_name?.join(', ') || 'N/A'}`
-    ].join('\n');
+    const firstGeneric = entry.generic_names?.[0] || medName;
+    const tooltip = [
+        entry.generic_names.length ? `Generic: ${entry.generic_names.join(', ')}` : '',
+        entry.brand_names.length ? `Brand: ${entry.brand_names.join(', ')}` : ''
+    ].filter(Boolean).join('\n');
 
     const li = document.createElement('li');
     li.className = 'med-item';
-    li.setAttribute('title', tooltipText);
+    li.title = tooltip;
     li.innerHTML = `
         <span>
-            📦 ${genericToShow}
-            <em style="color: #888; font-size: 0.85em;">(generic)</em>
+            ${firstGeneric}
         </span>
         <button class="remove-btn" aria-label="Remove">✖</button>
     `;
@@ -80,8 +78,14 @@ medInput.addEventListener('input', async function () {
         feedback.textContent = '';
 
         if (response.ok && suggestions.length > 0) {
-            suggestions.forEach(({ med_name, drugid, source, brand_name = [], generic_name = [] }) => {
+            suggestions.forEach(({ med_name, drugid, source, generic_names, brand_names }) => {
+                const tooltip = [
+                    generic_names.length ? `Generic: ${generic_names.join(', ')}` : '',
+                    brand_names.length ? `Brand: ${brand_names.join(', ')}` : ''
+                ].filter(Boolean).join('\n');
+            
                 const li = document.createElement('li');
+                li.title = tooltip;
                 li.innerHTML = `
                     <span>${sourceIcons[source] || '❔'}</span>
                     <span>${med_name} <em style="color: #888; font-size: 0.85em;">(${source.replace('_', ' ')})</em></span>
@@ -92,10 +96,10 @@ medInput.addEventListener('input', async function () {
                 drugMap.set(med_name.toLowerCase(), {
                     drugid,
                     source,
-                    brand_names,
-                    generic_names
+                    generic_names,
+                    brand_names
                 });
-            });
+            });                      
         } else {
             feedback.textContent = suggestions.message || suggestions.error || 'No medications found.';
         }

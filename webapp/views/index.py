@@ -27,7 +27,13 @@ def autocomplete():
         """, (term + '%',))
         
         results = [
-            {'med_name': row[0], 'drugid': row[1], 'generic_name': row[2], 'brand_name': row[3], 'source': row[4]}
+            {
+                'med_name': row[0],
+                'drugid': row[1],
+                'generic_names': [v.strip() for v in row[2]],
+                'brand_names': [v.strip() for v in row[3]],
+                'source': row[4]
+            }
             for row in cursor.fetchall()
         ]
         cursor.close()
