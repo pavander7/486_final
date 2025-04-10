@@ -1,10 +1,10 @@
 import argparse
 import pandas as pd
+import os
 
 from config import EVENT_LINK_FILE, LABEL_LINK_FILE
 from downloader import Downloader
-from preprocess import process_event_json, process_label_json, insert_data, insert_dr
-from preprocess import init_schema
+from preprocess import process_event_json, process_label_json, insert_data, insert_dr, construct_linked_df, init_schema
 
 def main():
     parser = argparse.ArgumentParser()
@@ -32,7 +32,7 @@ def main():
         while (label_dl.size()):
             data = process_label_json(label_dl.get())
             if args.verbose:
-                print('file downloaded')
+                print('file processed')
             if isinstance(data, pd.DataFrame):
                 insert_data('drugs', data)
                 if args.verbose:
@@ -47,12 +47,17 @@ def main():
         while (event_dl.size()):
             data = process_event_json(event_dl.get())
             if args.verbose:
-                print('file downloaded')
+                print('file processed')
             dr = data.pop('drugreports')
             for name, table in data.items():
+                if name == "reactions":
+                    table = construct_linked_df(table)
                 insert_data(name, table)
+                if args.verbose:
+                    print(f'inserted into {name}')
             insert_dr(dr)
             if args.verbose:
+                print('inserted into drugreports')
                 print('data uploaded')
 
 if __name__ == "__main__":

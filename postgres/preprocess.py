@@ -3,10 +3,10 @@ import os
 
 import pandas as pd
 
-from config import REPORT_COLS, PATIENT_COLS, REACTION_COLS, DRUG_COLS, DRUGREPORT_COLS, REPORT_BOOL_COLS
+from config import REPORT_COLS, PATIENT_COLS, REACTION_COLS, DRUGREPORT_COLS, REPORT_BOOL_COLS
 from config import LABEL_COLS, OPENFDA_COLS
 from config import SCHEMA_FILEPATH, INPUT_DIR_PATH, POSTGRES_SCHEMA
-from helpers import get_db_conn, rename_columns, convert_boolean, drop_invalid_dict_rows
+from helpers import get_db_conn, convert_boolean, drop_invalid_dict_rows
 
 def load_json(input_dir, prefix=None):
     """Loads all json files from given input directory."""
@@ -54,7 +54,6 @@ def process_label_json(data):
 
     return labels_full
 
-
 def process_event_json(data):
     """Processes list of dictionaries to DBMS-friendly format."""
     raw_df = pd.DataFrame(data)
@@ -62,11 +61,11 @@ def process_event_json(data):
     # PHASE ONE: create tables
 
     # step 1: select report cols
-    reports = raw_df[REPORT_COLS]
+    reports = raw_df[list(set(REPORT_COLS) & set(raw_df.columns))]
 
     # step 2: select patient cols
     patient_df = pd.json_normalize(raw_df['patient'])
-    patient_df = patient_df[PATIENT_COLS]
+    patient_df = patient_df[list(set(PATIENT_COLS) & set(patient_df.columns))]
     reports = pd.concat([reports, patient_df], axis=1)
     
     # step 3: create reactions table
@@ -77,7 +76,7 @@ def process_event_json(data):
     reactions_exploded = reactions_exploded.explode('reaction').reset_index(drop=True)
     reactions_normalized = pd.json_normalize(reactions_exploded['reaction'])
     reactions = pd.concat([reactions_exploded.drop(columns=['reaction']), reactions_normalized], axis=1)
-    reactions = reactions[REACTION_COLS]
+    reactions = reactions[list(set(REACTION_COLS) & set(reactions.columns))]
 
     # step 4: create drugs table
     # drugs = pd.json_normalize(patient_df['drug'].explode())
@@ -147,6 +146,7 @@ def insert_dr(dr):
     cur = conn.cursor()
 
     # Convert NaN to None (Postgres will interpret these as NULL)
+    dr = construct_linked_df(dr)
     dr = dr.where(pd.notnull(dr), None)  # Replaces NaNs with None (NULL in PostgreSQL)
 
     # Step 1: Fetch drugid <-> activesubstance mapping from openFDA.drugs
@@ -171,6 +171,31 @@ def insert_dr(dr):
     conn.commit()
     cur.close()
     conn.close()
+
+def construct_linked_df(df):
+    """Inserts the reactions DataFrame into corresponding PostgreSQL table."""
+    # Connect to the database
+    conn = get_db_conn()
+    cur = conn.cursor()
+
+    # Step 1: Fetch drugid <-> activesubstance mapping from openFDA.drugs
+    cur.execute("SELECT safetyreportid, MAX(reportid) as relevant_reportid FROM openFDA.reports GROUP BY safetyreportid;")
+    report_map = pd.DataFrame(cur.fetchall(), columns=['safetyreportid', 'relevant_reportid'])
+
+    # Step 2: Merge with `dr` to get corresponding drugid
+    merged = df.merge(report_map, on='safetyreportid', how='left')
+
+    # Rename reportid column to match schema
+    merged['reportid'] = merged['relevant_reportid']
+
+    # Step 3: Keep only necessary columns
+    insert_df = merged.drop(['safetyreportid', 'relevant_reportid'], axis=1)
+
+    # Close
+    cur.close()
+    conn.close()
+
+    return insert_df
 
 def init_schema():
     # Delete schema if needed
@@ -235,6 +260,8 @@ def main():
 
     insert_data('drugs', label_data)
     print(f'inserted {len(label_data)} records into openFDA.drugs')
+
+    event_data['reactions'] = construct_linked_df(event_data['reactions'])
 
     for name, table in event_data.items():
         insert_data(name, table)

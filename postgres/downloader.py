@@ -33,6 +33,8 @@ class Downloader:
             with z.open(json_filename) as f:
                 data = json.load(f)['results']  # Convert JSON into Python dict
 
+        print('file downloaded')
+
         return data
 
 

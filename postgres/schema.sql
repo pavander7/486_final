@@ -3,12 +3,12 @@ CREATE SCHEMA openFDA;
 CREATE TABLE openFDA.reports (
     reportid SERIAL PRIMARY KEY,
     safetyreportid TEXT,
-    safetyreportversion SMALLINT,
+    safetyreportversion INT,
     primarysourcecountry CHAR(2),
     occurcountry CHAR(2),
-    transmissiondateformat SMALLINT,
+    transmissiondateformat INT,
     transmissiondate DATE,
-    reporttype SMALLINT,
+    reporttype INT,
     serious BOOLEAN,
     seriousnessdeath BOOLEAN,
     seriousnesslifethreatening BOOLEAN,
@@ -27,10 +27,10 @@ CREATE TABLE openFDA.reports (
     */
     -- source stuff goes here, going to skip it for now
     patientonsetage REAL,
-    patientonsetageunit SMALLINT,
-    patientsex SMALLINT,
+    patientonsetageunit INT,
+    patientsex INT,
     patientweight REAL,
-    patientagegroup SMALLINT
+    patientagegroup INT
 );
 
 CREATE TABLE openFDA.reactions (
@@ -38,7 +38,7 @@ CREATE TABLE openFDA.reactions (
     reportid INT,
     reactionmeddraversionpt VARCHAR(10),
     reactionmeddrapt TEXT,
-    reactionoutcome SMALLINT,
+    reactionoutcome TEXT,
     FOREIGN KEY (reportid) REFERENCES openFDA.reports(reportid)
 );
 
