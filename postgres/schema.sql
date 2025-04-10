@@ -145,3 +145,10 @@ CREATE OR REPLACE VIEW openFDA.medications AS (
     FROM openFDA.drugs, unnest(generic_name) AS g
     WHERE g IS NOT NULL AND g <> ''
 );
+
+CREATE OR REPLACE VIEW openFDA.med_counts AS (
+    SELECT drugid, COUNT(*) AS num_reports
+    FROM openFDA.drugreports
+    GROUP BY drugid
+    ORDER BY num_reports DESC, drugid ASC
+);
