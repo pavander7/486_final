@@ -6,7 +6,7 @@ import pandas as pd
 from config import REPORT_COLS, PATIENT_COLS, REACTION_COLS, DRUG_COLS, DRUGREPORT_COLS, REPORT_BOOL_COLS
 from config import LABEL_COLS, OPENFDA_COLS
 from config import SCHEMA_FILEPATH, INPUT_DIR_PATH, POSTGRES_SCHEMA
-from helpers import get_db_conn, rename_columns, convert_boolean
+from helpers import get_db_conn, rename_columns, convert_boolean, drop_invalid_dict_rows
 
 def load_json(input_dir, prefix=None):
     """Loads all json files from given input directory."""
@@ -25,26 +25,32 @@ def load_json(input_dir, prefix=None):
 
 def process_label_json(data):
     raw_df = pd.DataFrame(data)
+    pd.set_option('display.max_rows', None)
 
     # PHASE ONE: create tables
     raw_df['drugid'] = raw_df['id']
+    raw_df = drop_invalid_dict_rows(raw_df, 'openfda', 'spl_id')
+    if raw_df.empty:
+        return None
 
     # step 1: select label cols
     labels = raw_df[list(set(LABEL_COLS) & set(raw_df.columns))]
 
     # step 2: select openfda cols
-    openfda = pd.json_normalize(labels['openfda'])
-    openfda = pd.concat([labels['drugid'], openfda], axis=1)
+    openfda = pd.json_normalize(labels['openfda'], errors='ignore')
+    openfda['drugid'] = labels['drugid'].reset_index(drop=True)
     openfda['administration_route'] = openfda['route']
-    openfda['spl_id_primary'] = openfda['spl_id'][0]
-    openfda = openfda[list(set(OPENFDA_COLS) & set(openfda.columns))]
+    openfda['spl_id_primary'] = openfda['spl_id'].apply(
+        lambda x: min(x) if isinstance(x, list) and x else None
+    )
+    openfda = openfda[OPENFDA_COLS]
 
     # PHASE TWO: fix dtypes
-    labels = labels.where(pd.notnull(labels), None)
-    openfda = openfda.where(pd.notnull(openfda), None)
+    # labels = labels.where(pd.notnull(labels), None)
+    # openfda = openfda.where(pd.notnull(openfda), None)
 
     # PHASE THREE: join
-    labels_full = pd.concat([labels.drop(columns=['openfda'], axis=1), openfda], axis=1)
+    labels_full = pd.merge(openfda, labels.drop(labels=['openfda'], axis=1), on='drugid', how='left')
 
     return labels_full
 
@@ -85,7 +91,9 @@ def process_event_json(data):
     drugreports = patient_df.explode('drug').reset_index(drop=True)
     dr_normalized = pd.json_normalize(drugreports['drug'])
     drugreports = pd.concat([dr_normalized, drugreports.drop(columns=['drug'])], axis=1)
-    drugreports['spl_id_primary'] = drugreports['openfda.spl_id'][0]
+    drugreports['spl_id_primary'] = drugreports['openfda.spl_id'].apply(
+        lambda x: min(x) if isinstance(x, list) and x else None
+    )
     drugreports = drugreports[DRUGREPORT_COLS]
     # drugreports = drugreports.drop_duplicates()
 
@@ -95,7 +103,7 @@ def process_event_json(data):
     reports = reports.where(pd.notnull(reports), None)
     reactions = reactions.where(pd.notnull(reactions), None)
     # drugs = drugs.where(pd.notnull(drugs), None)
-    drugreports = drugreports.where(pd.notnull(drugreports), None)
+    drugreports = drugreports.where(pd.notnull(drugreports), None).drop_duplicates()
 
     # step 2: booleans
     reports = convert_boolean(reports, REPORT_BOOL_COLS)
@@ -149,14 +157,14 @@ def insert_dr(dr):
     merged = dr.merge(drug_map, on='spl_id_primary', how='left')
 
     # Step 3: Keep only necessary columns
-    insert_df = merged[['safetyreportid', 'drugid']]
+    insert_df = merged[['reportid', 'drugid']]
     insert_df = insert_df.dropna().drop_duplicates() #remove nas and duplicates
 
     # Convert DataFrame to list of tuples
     records = insert_df.itertuples(index=False, name=None)
 
     # Step 4: Insert into drugreports
-    insert_query = "INSERT INTO openFDA.drugreports (safetyreportid, drugid) VALUES (%s, %s);"
+    insert_query = "INSERT INTO openFDA.drugreports (reportid, drugid) VALUES (%s, %s);"
     cur.executemany(insert_query, records)
 
     # Commit and close
@@ -232,9 +240,9 @@ def main():
         insert_data(name, table)
         print(f'inserted {len(table)} records into openFDA.{name}')
     
-    # insert_dr(dr)
-    # print(f'inserted {len(dr)} records into openFDA.drugreports')
-    
+    insert_dr(dr)
+    print(f'inserted {len(dr)} records into openFDA.drugreports')
+
     print('\nDATALOADING COMPLETE.')
 
 if __name__ == "__main__":

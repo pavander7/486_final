@@ -1,7 +1,8 @@
 CREATE SCHEMA openFDA;
 
 CREATE TABLE openFDA.reports (
-    safetyreportid INT PRIMARY KEY,
+    reportid SERIAL PRIMARY KEY,
+    safetyreportid TEXT,
     safetyreportversion SMALLINT,
     primarysourcecountry CHAR(2),
     occurcountry CHAR(2),
@@ -34,11 +35,11 @@ CREATE TABLE openFDA.reports (
 
 CREATE TABLE openFDA.reactions (
     reactionid SERIAL PRIMARY KEY,
-    safetyreportid INT NOT NULL,
-    reactionmeddraversionpt VARCHAR(10) NOT NULL,
-    reactionmeddrapt TEXT NOT NULL,
+    reportid INT,
+    reactionmeddraversionpt VARCHAR(10),
+    reactionmeddrapt TEXT,
     reactionoutcome SMALLINT,
-    FOREIGN KEY (safetyreportid) REFERENCES openFDA.reports(safetyreportid)
+    FOREIGN KEY (reportid) REFERENCES openFDA.reports(reportid)
 );
 
 CREATE TABLE openFDA.drugs (
@@ -127,10 +128,10 @@ CREATE TABLE openFDA.drugs (
 
 CREATE TABLE openFDA.drugreports (
     drugid TEXT NOT NULL,
-    safetyreportid INT NOT NULL,
-    PRIMARY KEY (drugid, safetyreportid),
+    reportid INT NOT NULL,
+    PRIMARY KEY (drugid, reportid),
     FOREIGN KEY (drugid) REFERENCES openFDA.drugs(drugid),
-    FOREIGN KEY (safetyreportid) REFERENCES openFDA.reports(safetyreportid)
+    FOREIGN KEY (reportid) REFERENCES openFDA.reports(reportid)
 );
 
 CREATE OR REPLACE VIEW openFDA.medications AS (

@@ -19,6 +19,7 @@ class Downloader:
     
     def get(self):
         url = self.links.pop(0).strip()
+        print(url)
         headers = {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' 
                           'AppleWebKit/537.36 (KHTML, like Gecko)' 

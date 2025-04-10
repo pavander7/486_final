@@ -1,4 +1,5 @@
 import argparse
+import pandas as pd
 
 from config import EVENT_LINK_FILE, LABEL_LINK_FILE
 from downloader import Downloader
@@ -32,9 +33,12 @@ def main():
             data = process_label_json(label_dl.get())
             if args.verbose:
                 print('file downloaded')
-            insert_data('drugs', data)
-            if args.verbose:
-                print('data uploaded')
+            if isinstance(data, pd.DataFrame):
+                insert_data('drugs', data)
+                if args.verbose:
+                    print('data uploaded')
+            elif args.verbose:
+                print('No valid data found')
 
     if not args.event_off:
         event_dl = Downloader(EVENT_LINK_FILE, args.event_skip, args.event_limit)
