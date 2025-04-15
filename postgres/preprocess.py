@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 import pandas as pd
 
@@ -7,6 +8,85 @@ from config import REPORT_COLS, PATIENT_COLS, REACTION_COLS, DRUGREPORT_COLS, RE
 from config import LABEL_COLS, OPENFDA_COLS
 from config import SCHEMA_FILEPATH, INPUT_DIR_PATH, POSTGRES_SCHEMA
 from helpers import get_db_conn, convert_boolean, drop_invalid_dict_rows
+
+def extract_interactions(drug_labels):
+    """Extract interactions from drug labels and store them in the drug_interactions table."""
+    conn = get_db_conn()
+    cur = conn.cursor()
+    
+    # Get all drugs with interaction information
+    drugs_with_interactions = drug_labels[drug_labels['drug_interactions'].notna()]
+    total_drugs = len(drugs_with_interactions)
+    print(f"\nStarting interaction extraction for {total_drugs} drugs...")
+    
+    for idx, (_, drug) in enumerate(drugs_with_interactions.iterrows(), 1):
+        if idx % 10 == 0:  # Print progress every 10 drugs
+            print(f"Processing drug {idx}/{total_drugs}...")
+            
+        if not drug['drug_interactions']:
+            continue
+            
+        # Handle both string and list types for drug_interactions
+        interaction_texts = []
+        if isinstance(drug['drug_interactions'], list):
+            interaction_texts = [str(text).lower() for text in drug['drug_interactions'] if text]
+        else:
+            try:
+                # Try to parse as JSON
+                interaction_data = json.loads(drug['drug_interactions'])
+                if isinstance(interaction_data, dict):
+                    interaction_texts = [str(interaction_data).lower()]
+                else:
+                    interaction_texts = [str(drug['drug_interactions']).lower()]
+            except json.JSONDecodeError:
+                interaction_texts = [str(drug['drug_interactions']).lower()]
+        
+        for interaction_text in interaction_texts:
+            # Look for other drugs mentioned in the interaction text
+            for _, other_drug in drug_labels.iterrows():
+                if other_drug['drugid'] == drug['drugid']:
+                    continue
+                    
+                # Check if this drug is mentioned in the interaction text
+                drug_names = []
+                if isinstance(other_drug['brand_name'], list):
+                    drug_names.extend([name.lower() for name in other_drug['brand_name'] if name])
+                if isinstance(other_drug['generic_name'], list):
+                    drug_names.extend([name.lower() for name in other_drug['generic_name'] if name])
+                    
+                for name in drug_names:
+                    if name and name in interaction_text:
+                        # Found an interaction
+                        drug1_id = min(drug['drugid'], other_drug['drugid'])
+                        drug2_id = max(drug['drugid'], other_drug['drugid'])
+                        
+                        # Check if this interaction already exists
+                        cur.execute("""
+                            SELECT id FROM openfda.drug_interactions 
+                            WHERE drug1_id = %s AND drug2_id = %s
+                        """, (drug1_id, drug2_id))
+                        
+                        if not cur.fetchone():
+                            # Insert new interaction
+                            cur.execute("""
+                                INSERT INTO openfda.drug_interactions 
+                                (drug1_id, drug2_id, severity, description, source, evidence_level)
+                                VALUES (%s, %s, %s, %s, %s, %s)
+                            """, (
+                                drug1_id,
+                                drug2_id,
+                                'medium',
+                                f"Interaction found in {drug['brand_name'][0] if isinstance(drug['brand_name'], list) and drug['brand_name'] else 'Unknown'} label: {interaction_text[:200]}...",
+                                "Drug Label",
+                                "moderate"
+                            ))
+                            if idx % 10 == 0:  # Print when we find interactions
+                                print(f"Found interaction between {drug['brand_name'][0] if isinstance(drug['brand_name'], list) and drug['brand_name'] else 'Unknown'} and {other_drug['brand_name'][0] if isinstance(other_drug['brand_name'], list) and other_drug['brand_name'] else 'Unknown'}")
+    
+    conn.commit()
+    cur.close()
+    conn.close()
+    print("\nInteraction extraction complete!")
 
 def load_json(input_dir, prefix=None):
     """Loads all json files from given input directory."""
@@ -126,7 +206,8 @@ def insert_data(table_name, data):
     columns = ', '.join(data.columns)  
     placeholders = ', '.join(['%s'] * len(data.columns))  
 
-    insert_query = f"INSERT INTO openFDA.{table_name} ({columns}) VALUES ({placeholders})"
+    # Add ON CONFLICT DO NOTHING for primary key conflicts
+    insert_query = f"INSERT INTO openfda.{table_name} ({columns}) VALUES ({placeholders}) ON CONFLICT DO NOTHING"
 
     # Convert DataFrame to list of tuples
     records = data.itertuples(index=False, name=None)
@@ -149,8 +230,8 @@ def insert_dr(dr):
     dr = construct_linked_df(dr)
     dr = dr.where(pd.notnull(dr), None)  # Replaces NaNs with None (NULL in PostgreSQL)
 
-    # Step 1: Fetch drugid <-> activesubstance mapping from openFDA.drugs
-    cur.execute("SELECT drugid, spl_id_primary FROM openFDA.drugs;")
+    # Step 1: Fetch drugid <-> activesubstance mapping from openfda.drugs
+    cur.execute("SELECT drugid, spl_id_primary FROM openfda.drugs;")
     drug_map = pd.DataFrame(cur.fetchall(), columns=['drugid', 'spl_id_primary'])
 
     # Step 2: Merge with `dr` to get corresponding drugid
@@ -164,7 +245,7 @@ def insert_dr(dr):
     records = insert_df.itertuples(index=False, name=None)
 
     # Step 4: Insert into drugreports
-    insert_query = "INSERT INTO openFDA.drugreports (reportid, drugid) VALUES (%s, %s);"
+    insert_query = "INSERT INTO openfda.drugreports (reportid, drugid) VALUES (%s, %s);"
     cur.executemany(insert_query, records)
 
     # Commit and close
@@ -178,8 +259,8 @@ def construct_linked_df(df):
     conn = get_db_conn()
     cur = conn.cursor()
 
-    # Step 1: Fetch drugid <-> activesubstance mapping from openFDA.drugs
-    cur.execute("SELECT safetyreportid, MAX(reportid) as relevant_reportid FROM openFDA.reports GROUP BY safetyreportid;")
+    # Step 1: Fetch drugid <-> activesubstance mapping from openfda.drugs
+    cur.execute("SELECT safetyreportid, MAX(reportid) as relevant_reportid FROM openfda.reports GROUP BY safetyreportid;")
     report_map = pd.DataFrame(cur.fetchall(), columns=['safetyreportid', 'relevant_reportid'])
 
     # Step 2: Merge with `dr` to get corresponding drugid

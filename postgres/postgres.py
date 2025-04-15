@@ -4,7 +4,7 @@ import os
 
 from config import EVENT_LINK_FILE, LABEL_LINK_FILE
 from downloader import Downloader
-from preprocess import process_event_json, process_label_json, insert_data, insert_dr, construct_linked_df, init_schema
+from preprocess import process_event_json, process_label_json, insert_data, insert_dr, construct_linked_df, init_schema, extract_interactions
 
 def main():
     parser = argparse.ArgumentParser()
@@ -29,16 +29,31 @@ def main():
         label_dl = Downloader(LABEL_LINK_FILE, args.label_skip, args.label_limit)
         if args.verbose:
             print(f'label downloader initialized with skip {args.label_skip} and limit {args.label_limit}')
+        
+        # Process and store all drug labels first
+        all_labels = []
         while (label_dl.size()):
             data = process_label_json(label_dl.get())
             if args.verbose:
                 print('file processed')
             if isinstance(data, pd.DataFrame):
-                insert_data('drugs', data)
+                all_labels.append(data)
                 if args.verbose:
-                    print('data uploaded')
+                    print('data processed')
             elif args.verbose:
                 print('No valid data found')
+        
+        # Combine all labels
+        if all_labels:
+            combined_labels = pd.concat(all_labels, ignore_index=True)
+            # Insert drugs first
+            insert_data('drugs', combined_labels)
+            if args.verbose:
+                print('drugs uploaded')
+            # Then extract and store interactions
+            extract_interactions(combined_labels)
+            if args.verbose:
+                print('interactions extracted and stored')
 
     if not args.event_off:
         event_dl = Downloader(EVENT_LINK_FILE, args.event_skip, args.event_limit)

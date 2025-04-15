@@ -1,54 +1,84 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <title>Medication Interaction Checker</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+{% extends "base.html" %}
 
-<body>
-    <header>
-        <nav>
-            <span style="float: left">
-                <a href="/">Medication Interaction Checker</a>
-            </span>
-            <span style="float: right">
-                <a href="/disclaimer/">disclaimer</a>
-            </span>
-        </nav>
+{% block title %}Medication Interaction Lookup{% endblock %}
+
+{% block content %}
+<div class="container">
+    <header class="text-center my-5">
+        <h1>Medication Interaction Checker</h1>
+        <p class="lead">Check potential interactions between your medications and supplements</p>
     </header>
 
-    <main>
-        <div class="search-area">
-            <!-- Form for submitting a medication search -->
-            <form id="med-form" class="search_bar" action="/interaction-results/" method="POST">
-                <input
-                    type="text"
-                    id="med-input"
-                    placeholder="Type a medication and press Enter"
-                    list="med-suggestions"
-                    autocomplete="off"
-                />
-
-                <!-- Custom suggestion box -->
-                <ul id="suggestions-box" class="suggestions-box"></ul>
-
-                <button type="submit" id="submit-btn">Submit</button>
-            </form>
-
-            <!-- Feedback message area -->
-            <div id="feedback" style="color: #999; font-size: 0.9em;"></div>
-
-            <!-- List of selected medications -->
-            <div class="med-list-container">
-                <ul class="med-list" id="med-list"></ul>
+    <!-- Search Section -->
+    <section class="search-section" aria-labelledby="search-heading">
+        <h2 id="search-heading" class="sr-only">Search for Medications</h2>
+        <form class="search-form" role="search">
+            <div class="input-group">
+                <input type="search" class="search-input form-control" placeholder="Enter medication name..."
+                    aria-label="Search for medications" required>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Search
+                </button>
             </div>
+        </form>
+    </section>
 
-            <!-- Hidden input to store the selected medications (for form submission) -->
-            <input type="hidden" name="meds" id="hidden-meds" form="med-form" />
+    <!-- Results Section -->
+    <section class="results-section" aria-labelledby="results-heading">
+        <h2 id="results-heading" class="sr-only">Search Results</h2>
+        <!-- Results will be dynamically inserted here -->
+    </section>
+
+    <!-- Selected Drugs Section -->
+    <section class="selected-drugs-section mt-4" aria-labelledby="selected-heading">
+        <h2 id="selected-heading">Selected Medications</h2>
+        <div class="selected-drugs-list">
+            <!-- Selected drugs will be dynamically inserted here -->
         </div>
-    </main>
+        <form class="interaction-form mt-3">
+            <button type="submit" class="btn btn-primary" disabled>
+                Check Interactions
+            </button>
+        </form>
+    </section>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
-</html>
+    <!-- Interactions Section -->
+    <section class="interactions-section mt-4" aria-labelledby="interactions-heading">
+        <h2 id="interactions-heading">Potential Interactions</h2>
+        <!-- Interaction results will be dynamically inserted here -->
+    </section>
+
+    <!-- Accessibility Panel -->
+    <div class="accessibility-panel" role="complementary" aria-label="Accessibility Settings">
+        <h3>Accessibility Settings</h3>
+        <div class="btn-group-vertical">
+            <button class="font-size-control btn btn-sm" data-size="16px">Normal Text</button>
+            <button class="font-size-control btn btn-sm" data-size="20px">Large Text</button>
+            <button class="font-size-control btn btn-sm" data-size="24px">Larger Text</button>
+            <button class="contrast-toggle btn btn-sm">High Contrast</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', function () {
+        // Focus management
+        const searchInput = document.querySelector('.search-input');
+        if (searchInput) {
+            searchInput.focus();
+        }
+
+        // Update interaction check button state
+        const interactionForm = document.querySelector('.interaction-form');
+        const checkButton = interactionForm.querySelector('button[type="submit"]');
+
+        document.addEventListener('drugSelectionChange', function () {
+            const selectedDrugs = document.querySelectorAll('.select-drug.selected');
+            checkButton.disabled = selectedDrugs.length < 2;
+        });
+    });
+</script>
+{% endblock %}

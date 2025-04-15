@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Accessibility Settings{% endblock %}
+
+{% block content %}
+<div class="container">
+    <header class="text-center my-5">
+        <h1>Accessibility Settings</h1>
+        <p class="lead">Customize your experience to meet your needs</p>
+    </header>
+
+    <section class="accessibility-options" aria-labelledby="options-heading">
+        <h2 id="options-heading">Accessibility Options</h2>
+
+        <!-- Text Size -->
+        <div class="option-group mb-4">
+            <h3>Text Size</h3>
+            <div class="btn-group" role="group" aria-label="Text size options">
+                <button class="font-size-control btn btn-outline-primary" data-size="16px">Normal</button>
+                <button class="font-size-control btn btn-outline-primary" data-size="20px">Large</button>
+                <button class="font-size-control btn btn-outline-primary" data-size="24px">Larger</button>
+            </div>
+        </div>
+
+        <!-- Color Contrast -->
+        <div class="option-group mb-4">
+            <h3>Color Contrast</h3>
+            <div class="form-check">
+                <input class="form-check-input contrast-toggle" type="checkbox" id="highContrast">
+                <label class="form-check-label" for="highContrast">
+                    High Contrast Mode
+                </label>
+            </div>
+        </div>
+
+        <!-- Motion -->
+        <div class="option-group mb-4">
+            <h3>Motion</h3>
+            <div class="form-check">
+                <input class="form-check-input motion-toggle" type="checkbox" id="reduceMotion">
+                <label class="form-check-label" for="reduceMotion">
+                    Reduce Motion
+                </label>
+            </div>
+        </div>
+
+        <!-- Keyboard Navigation -->
+        <div class="option-group mb-4">
+            <h3>Keyboard Navigation</h3>
+            <div class="keyboard-shortcuts">
+                <h4>Available Shortcuts</h4>
+                <ul class="list-unstyled">
+                    <li><kbd>Tab</kbd> - Navigate through interactive elements</li>
+                    <li><kbd>Enter</kbd> - Select/activate items</li>
+                    <li><kbd>Space</kbd> - Toggle checkboxes and buttons</li>
+                    <li><kbd>Esc</kbd> - Close modals and dialogs</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Screen Reader -->
+        <div class="option-group mb-4">
+            <h3>Screen Reader Support</h3>
+            <p>This application is compatible with screen readers and includes:</p>
+            <ul>
+                <li>ARIA landmarks for navigation</li>
+                <li>Alternative text for images</li>
+                <li>Descriptive link text</li>
+                <li>Live regions for dynamic content</li>
+            </ul>
+        </div>
+
+        <!-- Print Settings -->
+        <div class="option-group mb-4">
+            <h3>Print Settings</h3>
+            <div class="form-check">
+                <input class="form-check-input print-toggle" type="checkbox" id="printFriendly">
+                <label class="form-check-label" for="printFriendly">
+                    Enable Print-Friendly Mode
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <!-- Save Settings -->
+    <section class="save-settings mt-4">
+        <button class="btn btn-primary" id="saveSettings">
+            Save Settings
+        </button>
+        <button class="btn btn-outline-secondary" id="resetSettings">
+            Reset to Default
+        </button>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Load saved settings
+        loadSavedSettings();
+
+        // Save settings
+        document.getElementById('saveSettings').addEventListener('click', function () {
+            saveSettings();
+            announceToScreenReader('Settings saved successfully');
+        });
+
+        // Reset settings
+        document.getElementById('resetSettings').addEventListener('click', function () {
+            resetSettings();
+            announceToScreenReader('Settings reset to default');
+        });
+    });
+
+    function loadSavedSettings() {
+        const settings = JSON.parse(localStorage.getItem('accessibilitySettings') || '{}');
+
+        // Apply saved settings
+        if (settings.fontSize) {
+            document.body.style.fontSize = settings.fontSize;
+        }
+        if (settings.highContrast) {
+            document.body.classList.add('high-contrast');
+            document.getElementById('highContrast').checked = true;
+        }
+        if (settings.reduceMotion) {
+            document.body.classList.add('reduce-motion');
+            document.getElementById('reduceMotion').checked = true;
+        }
+        if (settings.printFriendly) {
+            document.body.classList.add('print-friendly');
+            document.getElementById('printFriendly').checked = true;
+        }
+    }
+
+    function saveSettings() {
+        const settings = {
+            fontSize: document.body.style.fontSize || '16px',
+            highContrast: document.body.classList.contains('high-contrast'),
+            reduceMotion: document.body.classList.contains('reduce-motion'),
+            printFriendly: document.body.classList.contains('print-friendly')
+        };
+
+        localStorage.setItem('accessibilitySettings', JSON.stringify(settings));
+    }
+
+    function resetSettings() {
+        localStorage.removeItem('accessibilitySettings');
+        document.body.style.fontSize = '16px';
+        document.body.classList.remove('high-contrast', 'reduce-motion', 'print-friendly');
+        document.getElementById('highContrast').checked = false;
+        document.getElementById('reduceMotion').checked = false;
+        document.getElementById('printFriendly').checked = false;
+    }
+</script>
+{% endblock %}

@@ -1,7 +1,29 @@
-/env
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Environment variables
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data and logs
 /data
 *.json
-.DS_Store
-*/__pycache__
-*.pyc
-postgres/__pycache__/config.cpython-312.pyc
+elasticsearch-data/
+elasticsearch-8.12.1/
+
+# Project specific
+.cursorignore

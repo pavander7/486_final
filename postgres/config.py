@@ -15,9 +15,9 @@ REPORT_BOOL_COLS =   ['serious', 'seriousnessdeath', 'seriousnesslifethreatening
 
 # POSTGRES AUTH
 POSTGRES_DBNAME = 'postgres'
-POSTGRES_USERNAME = 'paulvanderwoude'
+POSTGRES_USERNAME = 'thamim'
 POSTGRES_HOSTNAME = 'localhost'
-POSTGRES_PORT = '5432'
+POSTGRES_PORT = '5433'
 POSTGRES_SCHEMA = "openfda"
 
 # POSTGRES PATHS
