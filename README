@@ -72,10 +72,37 @@ This project provides a modular system for downloading, processing, and uploadin
    - `postgres.py` will automatically drop the schema if necessary when initializing.
    - It is not necessary to directly run `schema.sql` or `drop.sql`.
 
+## Web Application
+
+After the database is populated, a Flask-based web app provides a user interface for interacting with the data.
+
+### Features
+
+- 🔍 **Searchable Drug Label Index**  
+  Users can search for medications by name using a type-ahead search bar.
+  
+- 💊 **Medication Detail Pages**  
+  Each medication page shows drug label information pulled directly from the PostgreSQL database.
+
+- ⚠️ **Interaction Checker**  
+  Users can select multiple medications and view potential drug-drug interactions derived from adverse event co-occurrence data.
+
+### Usage
+
+1. Ensure your database is running and populated.
+2. From the project root, start the Flask app:
+
+   ```{bash}
+   python app.py
+   ```
+
+3. Navigate to [http://127.0.0.1:5000/](http://127.0.0.1:5000/) in your browser.
+
 ## Module Overviews
 
 - [`linkgen.py`](linkgen.py): Fetches latest FDA download URLs for drug labels and adverse events, writing them to `label_links.txt` and `event_links.txt`.
 - [`postgres/`](postgres/): Core package that contains all logic for handling data movement, transformation, and database integration.
+- [`webapp/`](webapp/): Contains all frontend and backend logic for the user-facing Flask app.
 
 Each module has its own README with more detailed usage instructions.
 
