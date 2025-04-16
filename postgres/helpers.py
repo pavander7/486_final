@@ -24,7 +24,7 @@ def convert_boolean (df, colnames, true_val = 1, false_val = 2):
     df = df.copy()
     for col in colnames:
         df[col] = df[col].apply(
-            lambda x: True if x == true_val else False if x == false_val else None
+            lambda x: True if x == true_val else False
         )
     
     return df
