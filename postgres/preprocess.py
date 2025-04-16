@@ -6,7 +6,7 @@ import pandas as pd
 from config import REPORT_COLS, PATIENT_COLS, REACTION_COLS, DRUGREPORT_COLS, REPORT_BOOL_COLS
 from config import LABEL_COLS, OPENFDA_COLS
 from config import SCHEMA_FILEPATH, POSTGRES_SCHEMA
-from helpers import get_db_conn, convert_boolean, drop_invalid_dict_rows
+from helpers import get_db_conn, convert_boolean, drop_invalid_dict_rows, convert_age
 
 def process_label_json(data):
     raw_df = pd.DataFrame(data)
@@ -50,6 +50,7 @@ def process_event_json(data):
 
     # step 2: select patient cols
     patient_df = pd.json_normalize(raw_df['patient'])
+    patient_df = convert_age(patient_df)
     patient_df = patient_df[list(set(PATIENT_COLS) & set(patient_df.columns))]
     reports = pd.concat([reports, patient_df], axis=1)
     
