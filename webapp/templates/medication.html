@@ -1,39 +1,60 @@
 <!--Template for displaying info on a single medication-->
 {% extends "base.html" %}
 
-{% block title %}{{ drug.name }} - Medication Information{% endblock %}
+{% block title %}{{ drug_name }} - Medication Information{% endblock %}
 
 {% block content %}
 <div class = "medinfo-container">
     <div class = "medinfo-panel">
-        <h1>{{ drug.name }}</h1>
+        <h1>{{ drug_name }}</h1>
         <div class = "medname-panel">
             <h2>Names</h2>
-            {% if len(drug.x_name) > 0 %}
+            {% if generic_name %}
                 <h3>Generic Name(s)</h3>
-                {% for name in drug.generic_name %}
+                {% for name in generic_name %}
                     <p>- {{ name }}</p>
                 {% endfor %}
             {% endif %}
-            {% if len(drug.x_name) > 0 %}
+            {% if brand_name %}
                 <h3>Brand Name(s)</h3>
-                {% for name in drug.brand_name %}
+                {% for name in brand_name %}
                     <p>- {{ name }}</p>
                 {% endfor %}
             {% endif %}
-            {% if len(drug.x_name) > 0 %}
+            {% if substance_name %}
                 <h3>Substance Name(s)</h3>
-                {% for name in drug.substance_name %}
+                {% for name in substance_name %}
                     <p>- {{ name }}</p>
                 {% endfor %}
             {% endif %}
         </div>
-        {% if len(drug.fields) > 0 %}
+        {% if openfda %}
+            <div class="openfda-fields">
+                <h2>Technical Information</h2>
+                {% for title, content in openfda.items() %}
+                    <h3>{{ title }}</h3>
+                    {% if content is string %}
+                        <p>{{ content }}</p>
+                    {% else %}
+                        {% for item in content %}
+                            <p>- {{ item }}</p>
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% if fields %}
             <div class="medinfo-fields">
                 <h2>Details</h2>
-                {% for title, content in drug.fields.items() %}
+                {% for title, content in fields.items() %}
                     <h3>{{ title }}</h3>
-                    <p>{{ content }}</p>
+                    {% if content is string %}
+                        <p>{{ content }}</p>
+                    {% else %}
+                        {% for item in content %}
+                            <p>- {{ item }}</p>
+                        {% endfor %}
+                    {% endif %}
                 {% endfor %}
             </div>
         {% endif %}
