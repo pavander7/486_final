@@ -5,23 +5,8 @@ import pandas as pd
 
 from config import REPORT_COLS, PATIENT_COLS, REACTION_COLS, DRUGREPORT_COLS, REPORT_BOOL_COLS
 from config import LABEL_COLS, OPENFDA_COLS
-from config import SCHEMA_FILEPATH, INPUT_DIR_PATH, POSTGRES_SCHEMA
+from config import SCHEMA_FILEPATH, POSTGRES_SCHEMA
 from helpers import get_db_conn, convert_boolean, drop_invalid_dict_rows
-
-def load_json(input_dir, prefix=None):
-    """Loads all json files from given input directory."""
-    data = []
-    
-    for filename in os.listdir(input_dir):
-        file_path = os.path.join(input_dir, filename)
-
-        if file_path.endswith('.json') and (not prefix or file_path.startswith(f'{input_dir}/{prefix}')):
-            with open(file_path, 'r', encoding='utf-8') as file:
-                dump = json.load(file)  # contains 'meta' and 'results'
-                results = dump["results"]  # separate the results from the meta
-                data.extend(results)
-    
-    return data
 
 def process_label_json(data):
     raw_df = pd.DataFrame(data)
@@ -243,34 +228,3 @@ def drop_schema_if_exists(verbose=True):
 
     cur.close()
     conn.close()
-
-def main():
-    label_raw = load_json(INPUT_DIR_PATH, prefix='drug-label')
-    event_raw = load_json(INPUT_DIR_PATH, prefix='drug-event')
-    print(f'loaded {len(os.listdir(INPUT_DIR_PATH))} files from {INPUT_DIR_PATH}')
-
-    label_data = process_label_json(label_raw)
-    event_data = process_event_json(event_raw)
-    print(f'processed {len(label_data) + len(event_data['reports']) + len(event_data['reactions']) + len(event_data['drugreports'])} records')
-
-    dr = event_data.pop('drugreports')
-
-    init_schema()
-    print('executed schema')
-
-    insert_data('drugs', label_data)
-    print(f'inserted {len(label_data)} records into openFDA.drugs')
-
-    event_data['reactions'] = construct_linked_df(event_data['reactions'])
-
-    for name, table in event_data.items():
-        insert_data(name, table)
-        print(f'inserted {len(table)} records into openFDA.{name}')
-    
-    insert_dr(dr)
-    print(f'inserted {len(dr)} records into openFDA.drugreports')
-
-    print('\nDATALOADING COMPLETE.')
-
-if __name__ == "__main__":
-    main()

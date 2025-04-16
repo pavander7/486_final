@@ -1,5 +1,4 @@
 # DATA PATHS
-INPUT_DIR_PATH = 'data'
 EVENT_LINK_FILE = 'event_links.txt'
 LABEL_LINK_FILE = 'label_links.txt'
 
