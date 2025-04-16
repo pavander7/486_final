@@ -1,0 +1,89 @@
+# FDA Drug Data Pipeline
+
+This project provides a modular system for downloading, processing, and uploading FDA drug data into a PostgreSQL database. It is organized around three main components, each responsible for a specific stage in the pipeline.
+
+## Project Structure
+
+```{bash}
+.
+├── postgres/
+│   ├── config.py                       # File paths and constants
+│   ├── downloader.py                   # Download logic for FDA datasets
+│   ├── helpers.py                      # Shared utility functions
+│   ├── postgres.py                     # Functions for interacting with the database
+│   ├── preprocess.py                   # Data cleaning & transformation logic
+│   ├── schema.sql                      # SQL to create PostgreSQL schema
+│   ├── drop.sql                        # SQL to drop tables (if needed)
+│   ├── event_links.txt                 # List of adverse event dataset links
+│   ├── label_links.txt                 # List of drug label dataset links
+│   ├── linkgen.py                      # Generates and saves download URLs
+│   └── README
+├── webapp/
+│   ├── static/
+│   │   ├── script.js                   # Clientside dynamics
+│   │   └── style.css                   # CSS stylesheet
+│   ├── templates/
+│   │   ├── index.html                  # Frontpage template
+│   │   ├── interaction-results.html    # Results page template
+│   │   └── medication.html             # Medication info page template
+│   ├── views/
+│   │   ├── __init__.py                 # Initializer for serverside dynamics
+│   │   ├── index.py                    # Serverside dynamics for frontpage
+│   │   ├── interaction-results.py      # Serverside dynamics for results page
+│   │   └── medication.py               # Serverside dynamics for medication info page
+│   ├── __init__.py                     # Initializer for web app
+│   └── config.py                       # Flask config details
+├── .gitignore                          # Gitignore
+└── app.py                              # Webapp driver
+```
+
+## Quickstart
+
+1. **Clone the repository**
+
+   ```{bash}
+   git clone <your-repo-url>
+   cd <your-project-folder>
+   ```
+
+2. **Generate dataset links**
+
+   ```{bash}
+   python linkgen.py
+   ```
+
+3. **Update `config.py`**
+   - Update `POSTGRES_DBNAME`, `POSTGRES_USERNAME`, `POSTGRES_HOSTNAME`, and `POSTGRES_PORT` to match the details of your PostgreSQL server.
+
+4. **Load into PostgreSQL**
+   - Use `postgres.py` to insert processed data into your database.
+   - Include `--init` to initialize or reset and reinitialize the schema:
+
+   ```{bash}
+   python postgres/postgres.py --init
+   ```
+
+   - To add further data, exclude the `--init` tag:
+
+   ```{bash}
+   python postgres/postgres.py --init
+   ```
+
+   - `postgres.py` will automatically drop the schema if necessary when initializing.
+   - It is not necessary to directly run `schema.sql` or `drop.sql`.
+
+## Module Overviews
+
+- [`linkgen.py`](linkgen.py): Fetches latest FDA download URLs for drug labels and adverse events, writing them to `label_links.txt` and `event_links.txt`.
+- [`postgres/`](postgres/): Core package that contains all logic for handling data movement, transformation, and database integration.
+
+Each module has its own README with more detailed usage instructions.
+
+## About the Data
+
+This project uses the [FDA's open data API](https://open.fda.gov/data/download/) to retrieve:
+
+- **Drug Labels** (structured product labeling)
+- **Adverse Event Reports** (reports of adverse events including patient biometric data, medications, and reported reactions)
+
+These are large, publicly available datasets updated by the FDA.

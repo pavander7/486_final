@@ -4,6 +4,7 @@ This project provides a streamlined data ingestion pipeline for downloading, pro
 
 ## Project Structure
 
+```{bash}
 .
 ├── postgres/
 │   ├── config.py
@@ -16,6 +17,7 @@ This project provides a streamlined data ingestion pipeline for downloading, pro
 ├── event_links.txt
 ├── label_links.txt
 └── linkgen.py
+```
 
 ## Setup and Configuration
 
