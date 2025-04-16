@@ -1,23 +1,42 @@
 <!--Template for displaying info on a single medication-->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <title>Medication Interaction Checker</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+{% extends "base.html" %}
 
-<body>
-    <header>
-        <nav>
-            <span style="float: left">
-                <a href="/">Medication Interaction Checker</a>
-            </span>
-            <span style="float: right">
-                <a href="/disclaimer/">disclaimer</a>
-            </span>
-        </nav>
-    </header>
+{% block title %}{{ drug.name }} - Medication Information{% endblock %}
 
-</body>
-</html>
+{% block content %}
+<div class = "medinfo-container">
+    <div class = "medinfo-panel">
+        <h1>{{ drug.name }}</h1>
+        <div class = "medname-panel">
+            <h2>Names</h2>
+            {% if len(drug.x_name) > 0 %}
+                <h3>Generic Name(s)</h3>
+                {% for name in drug.generic_name %}
+                    <p>- {{ name }}</p>
+                {% endfor %}
+            {% endif %}
+            {% if len(drug.x_name) > 0 %}
+                <h3>Brand Name(s)</h3>
+                {% for name in drug.brand_name %}
+                    <p>- {{ name }}</p>
+                {% endfor %}
+            {% endif %}
+            {% if len(drug.x_name) > 0 %}
+                <h3>Substance Name(s)</h3>
+                {% for name in drug.substance_name %}
+                    <p>- {{ name }}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
+        {% if len(drug.fields) > 0 %}
+            <div class="medinfo-fields">
+                <h2>Details</h2>
+                {% for title, content in drug.fields.items() %}
+                    <h3>{{ title }}</h3>
+                    <p>{{ content }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
