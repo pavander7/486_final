@@ -20,7 +20,7 @@ def rename_columns(df, prefix):
     df.rename(columns=new_columns, inplace=True)
     return df
 
-def convert_boolean (df, colnames, true_val = 2, false_val = 1):
+def convert_boolean (df, colnames, true_val = 1, false_val = 2):
     df = df.copy()
     for col in colnames:
         df[col] = df[col].apply(
