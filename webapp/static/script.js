@@ -4,15 +4,9 @@ const medList = document.getElementById('med-list');
 const hiddenMeds = document.getElementById('hidden-meds');
 const suggestionsBox = document.getElementById('suggestions-box');
 const feedback = document.getElementById('feedback');
-const drugMap = new Map(); // name -> { drugid, source }
 
 const meds = [];
 let activeIndex = -1;
-
-const sourceIcons = {
-    'brand name': "💊",
-    'generic name': "📦"
-};
 
 medInput.focus(); // Auto-focus on page load
 
@@ -29,10 +23,10 @@ function highlightSuggestion(index) {
 }
 
 function addMedication(medName) {
-    const entry = drugMap.get(medName.toLowerCase());
-    if (!entry || meds.includes(entry.drugid)) return;
+    const entry = medName.toLowerCase();
+    if (!entry || meds.includes(entry)) return;
 
-    meds.push(entry.drugid);
+    meds.push(entry);
 
     const firstGeneric = entry.generic_names?.[0] || medName;
     const tooltip = [
@@ -52,7 +46,7 @@ function addMedication(medName) {
 
     li.querySelector('.remove-btn').addEventListener('click', () => {
         medList.removeChild(li);
-        const index = meds.indexOf(entry.drugid);
+        const index = meds.indexOf(entry);
         if (index !== -1) meds.splice(index, 1);
     });
 
