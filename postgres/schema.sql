@@ -16,18 +16,7 @@ CREATE TABLE openfda.reports (
     seriousnessdisabling BOOLEAN,
     seriousnesscongenitalanomali BOOLEAN,
     seriousnessother BOOLEAN,
-    -- more dates here, not important
-    /*
-    receivedateformat SMALLINT,
-    receivedate DATE,
-    receiptdateformat SMALLINT,
-    receiptdate DATE,
-    fulfillexpeditecriteria BOOLEAN,
-    companynumb VARCHAR(50),
-    */
-    -- source stuff goes here, going to skip it for now
     patientonsetage REAL,
-    patientonsetageunit INT,
     patientsex INT,
     patientweight REAL,
     patientagegroup INT

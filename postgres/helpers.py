@@ -1,4 +1,5 @@
 # helper functions for preprocessing
+import pandas as pd
 from auth import Auth
 
 def get_db_conn():
