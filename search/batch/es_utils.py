@@ -5,6 +5,8 @@ es = Elasticsearch("http://localhost:9200")
 
 index_name = "reports_embeddings"
 
+model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+
 mapping = {
     "mappings": {
         "properties": {
@@ -30,6 +32,9 @@ def init_es():
 
 print(f"Created Elasticsearch index '{index_name}' for adverse event reports.")
 
+def embed_text(text):
+    return model.encode(text).tolist()
+
 def index_to_elasticsearch(report_id, synthetic_text, embedding):
     doc = {
         "reportid": report_id,
@@ -37,8 +42,3 @@ def index_to_elasticsearch(report_id, synthetic_text, embedding):
         "embedding": embedding
     }
     es.index(index=index_name, id=report_id, body=doc)
-
-model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-
-def embed_text(text):
-    return model.encode(text).tolist()

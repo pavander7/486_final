@@ -1,7 +1,6 @@
-from db_utils import get_reports
-from text_utils import create_synthetic_text
-from embedder import embed_text
-from es_utils import index_to_elasticsearch, init_es
+from search.db_utils import get_reports
+from search.text_utils import create_synthetic_text
+from es_utils import index_to_elasticsearch, init_es, embed_text
 
 def main():
     print("Initializing index")
