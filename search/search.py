@@ -1,40 +1,42 @@
-# search functions
-from collections import Counter
-from os import abort
-
 from es_search import search_reports
-from postgres.helpers import get_db_conn
+from postgres.auth import Auth
 
-def get_med_info(drugid):
-    """Collects medication information from the DB."""
-    conn = get_db_conn()
+def get_characterizations(reportid):
+    """Get drugid + characterization for a report."""
+    conn = Auth.get_db_conn()
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT generic_name, drug_interactions
-        FROM openfda.drugs
-        WHERE drugid = %s
-    """, (drugid,))
+        SELECT drugid, characterization
+        FROM openfda.drugreports
+        WHERE reportid = %s
+    """, (reportid,))
 
-    info_raw = cursor.fetchone()
-    if info_raw is None:
-        abort(404)
-
-    drugname = None
-    generic_name = info_raw[0]
-    if generic_name and isinstance(generic_name, list) and len(generic_name) > 0:
-        drugname = generic_name[0]
-    else:
-        abort(500)
-    label_warning = info_raw[1]
+    results = cursor.fetchall()
 
     cursor.close()
     conn.close()
 
-    return drugname, label_warning
+    return {drugid: char for drugid, char in results}
+
+def get_drugid_name_mapping():
+    """Map all drug names to drugids."""
+    conn = Auth.get_db_conn()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT drugid, name FROM openfda.medications
+    """)
+    rows = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    # name is lowercase string, drugid is int or str
+    return {name.lower(): str(drugid) for drugid, name in rows}
 
 def get_reactions_and_seriousness(reportid):
-    conn = get_db_conn()
+    conn = Auth.get_db_conn()
     cursor = conn.cursor()
     
     cursor.execute("""
@@ -54,20 +56,33 @@ def get_reactions_and_seriousness(reportid):
     return serious, reactions
 
 def execute_query(drugnames):
-    """Execute semantic query over ES, enrich with metadata."""
+    """Execute semantic query over ES, enrich with metadata and drug characterization info."""
+
+    drugnames = [d.lower() for d in drugnames]
+    name_to_drugid = get_drugid_name_mapping()
+    target_drugids = {name_to_drugid[name] for name in drugnames if name in name_to_drugid}
+
     results = search_reports(drugnames)
     
+    strong_reports = []
+    all_reactions = []
+
     for entry in results:
-        serious, reactions = get_reactions_and_seriousness(entry["reportid"])
+        reportid = entry["reportid"]
+        serious, reactions = get_reactions_and_seriousness(reportid)
+        char_map = get_characterizations(reportid)
+
+        in_relevant = {drugid for drugid, char in char_map.items() if drugid in target_drugids and char == 1}
+        
         entry["serious"] = serious
         entry["reactions"] = reactions
+        entry["char_match"] = len(in_relevant) > 0  # True if any queried drug is a likely cause
 
-    # Aggregate top reaction types
-    reaction_counter = Counter()
-    for r in results:
-        reaction_counter.update(r["reactions"])
+        all_reactions.extend(reactions)
+        if entry["char_match"]:
+            strong_reports.append(entry)
 
-    top_reactions = dict(reaction_counter.most_common(10))
-    strong_reports = [r for r in results if r["serious"] == 1]
+    from collections import Counter
+    top_reactions = dict(Counter(all_reactions).most_common(10))
 
-    return results, top_reactions, len(strong_reports), len(strong_reports)
+    return results, top_reactions, len(strong_reports), sum(r["serious"] for r in strong_reports)
