@@ -1,41 +1,47 @@
 <!--Template for displaying query results-->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <title>Medication Interaction Checker</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+{% extends "base.html" %}
 
-<body>
-    <header>
-        <nav>
-            <span style="float: left">
-                <a href="/">Medication Interaction Checker</a>
-            </span>
-            <span style="float: right">
-                <a href="/disclaimer/">disclaimer</a>
-            </span>
-        </nav>
-    </header>
+{% block title %}Medication Interaction Results{% endblock %}
 
-    <main>
-        <div class="results-container">
-            <div class="med-result-list">
-            {% for d in drugs %}
-                <div class="medications">
-
-                </div>
-            {% endfor %}
-            </div>
-            <div class="interaction-result-list">
-            {% for i in interactions %}
-                <div class="interaction">
-                    
-                </div>
-            {% endfor %}
-            </div>
+{% block content %}
+    <div class="results-container">
+        <h1>Search Results</h1>
+        <div class="med-result-container">
+            <h2>Selected Medications</h2>
+            <ul class="med-result-list">
+                {% for d in drugs %}
+                    <p>{{ d.name }}</p>
+                {% endfor %}
+            </ul>
         </div>
-    </main>
-</body>
-</html>
+        <div class="interaction-result-panel">
+            <h2>Potential Risks</h2>
+            {% if len(label_warnings) > 0 %}
+                <div class="label-warning-container">
+                    <h3>Label Warnings</h3>
+                    <ul class="label-warning-list">
+                        {% for drugname, warning in label_warnings.items() %}
+                            <p><b>{{ drugname }}:</b> {{ warning }}</p>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            {% if len(events_summary) > 0 %}
+                <div class="events-result-container">
+                    <h3>Adverse Events Summary</h3>
+                    <ul class="events-result-list">
+                        {% for line in events_summary %}
+                            <p>line</p>
+                        {% endfor %}
+                    </ul>
+                    <h3>Most Common Reported Reactions</h3>
+                    <ul class="reactions-result-list">
+                        {% for reaction, freq in reactions %}
+                            <p>{{ reaction }} ({{ freq }} reports)</p>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

@@ -53,3 +53,41 @@ def drop_invalid_dict_rows(df, column_name, required_key):
     print(f'dropped {len(df) - len(new_df)} out of {len(df)} rows')
 
     return new_df
+
+def convert_age(df, age="patientonsetage", ageformat="patientonsetageunit"):
+    """
+    Converts the 'age' and 'ageformat' columns in the DataFrame to PostgreSQL-compatible INTERVAL strings.
+    
+    Supported format codes:
+    801 - decade
+    802 - year
+    803 - month
+    804 - week
+    805 - day
+    806 - hour
+    
+    Returns:
+        Updated DataFrame with age column as INTERVAL strings.
+    """
+
+    # Mapping of format codes to PostgreSQL interval units
+    interval_units = {
+        801: "decade",
+        802: "year",
+        803: "month",
+        804: "week",
+        805: "day",
+        806: "hour"
+    }
+
+    def to_interval_string(row):
+        fmt = row[ageformat]
+        age = row[age]
+        unit = interval_units.get(fmt)
+        if unit is None or pd.isnull(age):
+            return None
+        return f"{float(age)} {unit}"
+
+    df["age"] = df.apply(to_interval_string, axis=1)
+
+    return df

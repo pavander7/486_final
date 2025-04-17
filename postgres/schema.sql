@@ -129,6 +129,7 @@ CREATE TABLE openfda.drugs (
 CREATE TABLE openfda.drugreports (
     drugid TEXT NOT NULL,
     reportid INT NOT NULL,
+    characterization INT NOT NULL,
     PRIMARY KEY (drugid, reportid),
     FOREIGN KEY (drugid) REFERENCES openfda.drugs(drugid),
     FOREIGN KEY (reportid) REFERENCES openfda.reports(reportid)
