@@ -91,7 +91,7 @@ Run this script to initialize schema and populate the PostgreSQL database.
 
 ### `postgres.py` Usage
 
-```python postgres.py [options]```
+```python postgres/postgres.py [options]```
 
 ### CLI Options
 
@@ -109,15 +109,6 @@ Run this script to initialize schema and populate the PostgreSQL database.
 - Schema setup via `schema.sql`
 - Data is inserted into normalized tables: `drugs`, `openfda`, `reports`, `reactions`, `drugreports`.
 - Use `DROP` script (`drop.sql`) to reset schema if needed.
-
-## Requirements
-
-- Python 3.x
-- PostgreSQL
-- Python packages: `pandas`, `requests`, `psycopg2`
-
-Install dependencies:
-```pip install pandas requests psycopg2```
 
 ## Notes
 
