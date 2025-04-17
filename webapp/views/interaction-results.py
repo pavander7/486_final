@@ -7,13 +7,19 @@ from search.search import get_med_info, execute_query
 
 @views_bp.route('/interaction-results')
 def serve_results():
-    medinfo = {}
     meds = request.args.getlist('meds')
 
+    # ITEM ONE: druginfo
+    druginfo = {}
+
     for med in meds:
-        medinfo[med] = get_med_info(med)
+        drugname, label_warning = get_med_info(med)
+        druginfo[drugname] = label_warning
 
-    query_results = execute_query(meds)
+    # ITEM TWO: events results
+    query_results, reaction_summary, strong_results, serious_results = execute_query(meds)
+    strength = strong_results/len(query_results) * 100
+    seriousness = serious_results/len(query_results) * 100
 
-    context = {'meds': meds, 'medinfo': medinfo, 'query_results': query_results}
+    context = {'druginfo': druginfo, 'reaction_summary': reaction_summary, 'num_reports': len(query_results), 'risk': strength, 'seriousness': seriousness}
     render_template('interaction-results.html', **context)
