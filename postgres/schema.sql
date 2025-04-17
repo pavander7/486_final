@@ -1,6 +1,6 @@
-CREATE SCHEMA openFDA;
+CREATE SCHEMA openfda;
 
-CREATE TABLE openFDA.reports (
+CREATE TABLE openfda.reports (
     reportid SERIAL PRIMARY KEY,
     safetyreportid TEXT,
     safetyreportversion INT,
@@ -33,16 +33,16 @@ CREATE TABLE openFDA.reports (
     patientagegroup INT
 );
 
-CREATE TABLE openFDA.reactions (
+CREATE TABLE openfda.reactions (
     reactionid SERIAL PRIMARY KEY,
     reportid INT,
     reactionmeddraversionpt VARCHAR(10),
     reactionmeddrapt TEXT,
     reactionoutcome TEXT,
-    FOREIGN KEY (reportid) REFERENCES openFDA.reports(reportid)
+    FOREIGN KEY (reportid) REFERENCES openfda.reports(reportid)
 );
 
-CREATE TABLE openFDA.drugs (
+CREATE TABLE openfda.drugs (
     drugid TEXT PRIMARY KEY,
     spl_product_data_elements TEXT[], 
     indications_and_usage TEXT[], 
@@ -126,29 +126,29 @@ CREATE TABLE openFDA.drugs (
     unii TEXT[]
 );
 
-CREATE TABLE openFDA.drugreports (
+CREATE TABLE openfda.drugreports (
     drugid TEXT NOT NULL,
     reportid INT NOT NULL,
     PRIMARY KEY (drugid, reportid),
-    FOREIGN KEY (drugid) REFERENCES openFDA.drugs(drugid),
-    FOREIGN KEY (reportid) REFERENCES openFDA.reports(reportid)
+    FOREIGN KEY (drugid) REFERENCES openfda.drugs(drugid),
+    FOREIGN KEY (reportid) REFERENCES openfda.reports(reportid)
 );
 
-CREATE OR REPLACE VIEW openFDA.medications AS (
+CREATE OR REPLACE VIEW openfda.medications AS (
     SELECT drugid, b AS med_name, 'brand name' AS source, brand_name, generic_name
-    FROM openFDA.drugs, unnest(brand_name) AS b
+    FROM openfda.drugs, unnest(brand_name) AS b
     WHERE b IS NOT NULL AND b <> ''
 
     UNION
 
     SELECT drugid, g AS med_name, 'generic name' AS source, brand_name, generic_name
-    FROM openFDA.drugs, unnest(generic_name) AS g
+    FROM openfda.drugs, unnest(generic_name) AS g
     WHERE g IS NOT NULL AND g <> ''
 );
 
-CREATE OR REPLACE VIEW openFDA.med_counts AS (
+CREATE OR REPLACE VIEW openfda.med_counts AS (
     SELECT drugid, COUNT(*) AS num_reports
-    FROM openFDA.drugreports
+    FROM openfda.drugreports
     GROUP BY drugid
     ORDER BY num_reports DESC, drugid ASC
 );

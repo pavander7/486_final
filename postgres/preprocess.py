@@ -126,7 +126,7 @@ def insert_data(table_name, data):
     columns = ', '.join(data.columns)  
     placeholders = ', '.join(['%s'] * len(data.columns))  
 
-    insert_query = f"INSERT INTO openFDA.{table_name} ({columns}) VALUES ({placeholders})"
+    insert_query = f"INSERT INTO openfda.{table_name} ({columns}) VALUES ({placeholders})"
 
     # Convert DataFrame to list of tuples
     records = data.itertuples(index=False, name=None)
@@ -149,8 +149,8 @@ def insert_dr(dr):
     dr = construct_linked_df(dr)
     dr = dr.where(pd.notnull(dr), None)  # Replaces NaNs with None (NULL in PostgreSQL)
 
-    # Step 1: Fetch drugid <-> activesubstance mapping from openFDA.drugs
-    cur.execute("SELECT drugid, spl_id_primary FROM openFDA.drugs;")
+    # Step 1: Fetch drugid <-> activesubstance mapping from openfda.drugs
+    cur.execute("SELECT drugid, spl_id_primary FROM openfda.drugs;")
     drug_map = pd.DataFrame(cur.fetchall(), columns=['drugid', 'spl_id_primary'])
 
     # Step 2: Merge with `dr` to get corresponding drugid
@@ -164,7 +164,7 @@ def insert_dr(dr):
     records = insert_df.itertuples(index=False, name=None)
 
     # Step 4: Insert into drugreports
-    insert_query = "INSERT INTO openFDA.drugreports (reportid, drugid) VALUES (%s, %s);"
+    insert_query = "INSERT INTO openfda.drugreports (reportid, drugid) VALUES (%s, %s);"
     cur.executemany(insert_query, records)
 
     # Commit and close
@@ -178,8 +178,8 @@ def construct_linked_df(df):
     conn = get_db_conn()
     cur = conn.cursor()
 
-    # Step 1: Fetch drugid <-> activesubstance mapping from openFDA.drugs
-    cur.execute("SELECT safetyreportid, MAX(reportid) as relevant_reportid FROM openFDA.reports GROUP BY safetyreportid;")
+    # Step 1: Fetch drugid <-> activesubstance mapping from openfda.drugs
+    cur.execute("SELECT safetyreportid, MAX(reportid) as relevant_reportid FROM openfda.reports GROUP BY safetyreportid;")
     report_map = pd.DataFrame(cur.fetchall(), columns=['safetyreportid', 'relevant_reportid'])
 
     # Step 2: Merge with `dr` to get corresponding drugid
@@ -259,16 +259,16 @@ def main():
     print('executed schema')
 
     insert_data('drugs', label_data)
-    print(f'inserted {len(label_data)} records into openFDA.drugs')
+    print(f'inserted {len(label_data)} records into openfda.drugs')
 
     event_data['reactions'] = construct_linked_df(event_data['reactions'])
 
     for name, table in event_data.items():
         insert_data(name, table)
-        print(f'inserted {len(table)} records into openFDA.{name}')
+        print(f'inserted {len(table)} records into openfda.{name}')
     
     insert_dr(dr)
-    print(f'inserted {len(dr)} records into openFDA.drugreports')
+    print(f'inserted {len(dr)} records into openfda.drugreports')
 
     print('\nDATALOADING COMPLETE.')
 
