@@ -1,0 +1,41 @@
+<!--Template for displaying query results-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Medication Interaction Checker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <header>
+        <nav>
+            <span style="float: left">
+                <a href="/">Medication Interaction Checker</a>
+            </span>
+            <span style="float: right">
+                <a href="/disclaimer/">disclaimer</a>
+            </span>
+        </nav>
+    </header>
+
+    <main>
+        <div class="results-container">
+            <div class="med-result-list">
+            {% for d in drugs %}
+                <div class="medications">
+
+                </div>
+            {% endfor %}
+            </div>
+            <div class="interaction-result-list">
+            {% for i in interactions %}
+                <div class="interaction">
+                    
+                </div>
+            {% endfor %}
+            </div>
+        </div>
+    </main>
+</body>
+</html>

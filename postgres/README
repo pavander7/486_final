@@ -4,6 +4,7 @@ This project provides a streamlined data ingestion pipeline for downloading, pro
 
 ## Project Structure
 
+```{bash}
 .
 ├── postgres/
 │   ├── config.py
@@ -16,6 +17,7 @@ This project provides a streamlined data ingestion pipeline for downloading, pro
 ├── event_links.txt
 ├── label_links.txt
 └── linkgen.py
+```
 
 ## Setup and Configuration
 
@@ -54,6 +56,10 @@ Functionality:
 - Reads a specified number of URLs from a file (`event_links.txt` or `label_links.txt`).
 - Downloads and unzips JSON content in memory.
 - Returns parsed JSON data from the `'results'` field.
+
+## postgres.py
+
+This is the main driver function. Adding '-i' in the command line will (re)initialize the schema, otherwise the program will assume the database is properly set up. DEBUG_LIMIT in config can be altered to process only a subset of the files.
 
 ## Data Preprocessing
 

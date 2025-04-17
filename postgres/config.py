@@ -1,5 +1,3 @@
-from auth import Auth
-
 # DATA PATHS
 EVENT_LINK_FILE = 'event_links.txt'
 LABEL_LINK_FILE = 'label_links.txt'
@@ -13,12 +11,6 @@ REACTION_COLS =     ['safetyreportid', 'reactionmeddraversionpt', 'reactionmeddr
 DRUG_COLS =         ['drugcharacterization', 'medicinalproduct', 'drugdosagetext', 'drugadministrationroute', 'drugindication', 'actiondrug', 'drugadditional', 'activesubstance', 'application_number', 'brand_name', 'generic_name', 'manufacturer_name', 'product_ndc', 'product_type', 'administration_route', 'substance_name', 'rxcui', 'spl_id', 'spl_set_id', 'package_ndc', 'nui', 'pharm_class_epc', 'pharm_class_moa', 'unii']
 DRUGREPORT_COLS =   ['safetyreportid', 'spl_id_primary']
 REPORT_BOOL_COLS =   ['serious', 'seriousnessdeath', 'seriousnesslifethreatening', 'seriousnesshospitalization', 'seriousnessdisabling', 'seriousnesscongenitalanomali', 'seriousnessother']
-
-# POSTGRES AUTH
-POSTGRES_DBNAME = 'postgres'
-POSTGRES_USERNAME = 'paulvanderwoude'
-POSTGRES_HOSTNAME = 'localhost'
-POSTGRES_PORT = '5432'
 
 # POSTGRES DETAILS
 POSTGRES_SCHEMA = "openfda"

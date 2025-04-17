@@ -1,7 +1,7 @@
 import pandas as pd
 import requests
 
-from postgres.config import LABEL_LINK_FILE, EVENT_LINK_FILE
+from config import LABEL_LINK_FILE, EVENT_LINK_FILE
 
 link_json = requests.get('https://api.fda.gov/download.json').json()
 raw = link_json['results']['drug']

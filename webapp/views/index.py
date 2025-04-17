@@ -1,6 +1,6 @@
 from flask import request, jsonify, render_template, current_app
 from . import views_bp
-from webapp.helpers import get_db_connection
+from postgres.helpers import get_db_connection
 import psycopg2
 
 @views_bp.route('/')
