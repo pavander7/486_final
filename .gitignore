@@ -5,3 +5,4 @@
 */__pycache__
 *.pyc
 postgres/__pycache__/config.cpython-312.pyc
+postgres/auth.py

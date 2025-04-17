@@ -1,3 +1,5 @@
+from auth import Auth
+
 # DATA PATHS
 INPUT_DIR_PATH = 'data'
 EVENT_LINK_FILE = 'event_links.txt'
@@ -18,8 +20,8 @@ POSTGRES_DBNAME = 'postgres'
 POSTGRES_USERNAME = 'paulvanderwoude'
 POSTGRES_HOSTNAME = 'localhost'
 POSTGRES_PORT = '5432'
-POSTGRES_SCHEMA = "openfda"
 
-# POSTGRES PATHS
+# POSTGRES DETAILS
+POSTGRES_SCHEMA = "openfda"
 SCHEMA_FILEPATH = 'postgres/schema.sql'
 DROP_FILEPATH = 'postgres/drop.sql'

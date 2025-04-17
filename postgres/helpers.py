@@ -1,16 +1,8 @@
-import psycopg2
-import pandas as pd
-
-from config import POSTGRES_DBNAME, POSTGRES_USERNAME, POSTGRES_HOSTNAME, POSTGRES_PORT
+# helper functions for preprocessing
+from auth import Auth
 
 def get_db_conn():
-    """Connects to PostgreSQL DB."""
-    return psycopg2.connect(
-        dbname=POSTGRES_DBNAME,
-        host=POSTGRES_HOSTNAME,
-        user=POSTGRES_USERNAME,
-        port=POSTGRES_PORT
-    )
+    return Auth.get_db_conn()
 
 def rename_columns(df, prefix):
     """Renames columns starting with 'openfda.' by removing the 'openfda.' prefix."""
