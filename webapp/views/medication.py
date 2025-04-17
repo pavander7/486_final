@@ -12,17 +12,17 @@ openfda_cols = ["set_id", "effective_time", "application_number", "manufacturer_
 @views_bp.route("/medication/<drugid>", methods=["GET"])
 def med_info(drugid):
     conn = get_db_conn()
-    curr = conn.cursor(cursor_factory=RealDictCursor)
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    curr.execute("""
+    cursor.execute("""
         SELECT * 
         FROM openfda.drugs
         WHERE drugid = %s;
     """, (drugid,))
 
-    info_raw = curr.fetchone()
+    info_raw = cursor.fetchone()
     if info_raw is None:
-        abort(404)  # or show a nice error template
+        abort(404)
 
     drugname = None
     generic_name = []
@@ -55,7 +55,7 @@ def med_info(drugid):
                     pretty_title = re.sub(r'_', ' ', colname).title()
                     other_fields[pretty_title] = content
 
-    curr.close()
+    cursor.close()
     conn.close()
 
     if len(brand_name) == 0:

@@ -38,7 +38,7 @@ CREATE TABLE openFDA.reactions (
     reportid INT,
     reactionmeddraversionpt VARCHAR(10),
     reactionmeddrapt TEXT,
-    reactionoutcome TEXT,
+    reactionoutcome SMALLINT,
     FOREIGN KEY (reportid) REFERENCES openFDA.reports(reportid)
 );
 
