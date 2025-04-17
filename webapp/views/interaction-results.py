@@ -1,9 +1,7 @@
-from flask import request, jsonify, render_template, current_app
-import psycopg2
+from flask import request, render_template
 
 from . import views_bp
-from postgres.helpers import get_db_connection
-from search.search import get_med_info, execute_query
+from search.search_functions import get_med_info, execute_query
 
 @views_bp.route('/interaction-results')
 def serve_results():
