@@ -4,6 +4,10 @@ const medList = document.getElementById('med-list');
 const hiddenMeds = document.getElementById('hidden-meds');
 const suggestionsBox = document.getElementById('suggestions-box');
 const feedback = document.getElementById('feedback');
+const accToggleBtn = document.getElementById('accessibility-toggle');
+const accPanel = document.getElementById('accessibility-panel');
+const highContrastToggle = document.getElementById('high-contrast-toggle');
+const largeTextToggle = document.getElementById('large-text-toggle');
 
 const meds = [];
 let activeIndex = -1;
@@ -13,12 +17,17 @@ medInput.focus(); // Auto-focus on page load
 function clearSuggestions() {
     suggestionsBox.innerHTML = '';
     activeIndex = -1;
+    medInput.setAttribute('aria-expanded', 'false');
+    medInput.removeAttribute('aria-activedescendant');
 }
 
 function highlightSuggestion(index) {
     const items = suggestionsBox.querySelectorAll('li');
     items.forEach((item, i) => {
         item.classList.toggle('active', i === index);
+        if (i === index) {
+            medInput.setAttribute('aria-activedescendant', item.id);
+        }
     });
 }
 
@@ -72,28 +81,13 @@ medInput.addEventListener('input', async function () {
         feedback.textContent = '';
 
         if (response.ok && suggestions.length > 0) {
-            suggestions.forEach(({ med_name, drugid, source, generic_names, brand_names }) => {
-                const tooltip = [
-                    generic_names.length ? `Generic: ${generic_names.join(', ')}` : '',
-                    brand_names.length ? `Brand: ${brand_names.join(', ')}` : ''
-                ].filter(Boolean).join('\n');
-            
+            suggestions.forEach(({ med_name, drugid, source, generic_names, brand_names }, idx) => {
                 const li = document.createElement('li');
-                li.title = tooltip;
-                li.innerHTML = `
-                    <span>${sourceIcons[source] || '❔'}</span>
-                    <span>${med_name} <em style="color: #888; font-size: 0.85em;">(${source.replace('_', ' ')})</em></span>
-                `;
-                li.addEventListener('click', () => addMedication(med_name));
-                suggestionsBox.appendChild(li);
-            
-                drugMap.set(med_name.toLowerCase(), {
-                    drugid,
-                    source,
-                    generic_names,
-                    brand_names
-                });
-            });                      
+                li.id = `suggestion-${idx}`;
+                li.setAttribute('role', 'option');
+                // ... rest of your code
+            });
+            medInput.setAttribute('aria-expanded', 'true');                      
         } else {
             feedback.textContent = suggestions.message || suggestions.error || 'No medications found.';
         }
@@ -152,4 +146,20 @@ medForm.addEventListener('submit', function (e) {
         return;
     }
     hiddenMeds.value = JSON.stringify(meds);
+});
+
+// Show/hide settings panel
+accToggleBtn.addEventListener('click', () => {
+    const isExpanded = accPanel.classList.toggle('hidden') === false;
+    accToggleBtn.setAttribute('aria-expanded', isExpanded.toString());
+});
+
+// Toggle high contrast
+highContrastToggle.addEventListener('change', (e) => {
+    document.body.classList.toggle('high-contrast', e.target.checked);
+});
+
+// Toggle large text
+largeTextToggle.addEventListener('change', (e) => {
+    document.body.classList.toggle('large-text', e.target.checked);
 });

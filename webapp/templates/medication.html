@@ -1,63 +1,78 @@
-<!--Template for displaying info on a single medication-->
 {% extends "base.html" %}
 
 {% block title %}{{ drug_name }} - Medication Information{% endblock %}
 
 {% block content %}
-<div class = "medinfo-container">
-    <div class = "medinfo-panel">
-        <h1>{{ drug_name }}</h1>
-        <div class = "medname-panel">
-            <h2>Names</h2>
+<main class="medinfo-container" role="main">
+    <article class="medinfo-panel">
+        <h1 id="drug-name-heading">{{ drug_name }}</h1>
+
+        <section class="medname-panel" aria-labelledby="names-heading">
+            <h2 id="names-heading">Names</h2>
+
             {% if generic_name %}
                 <h3>Generic Name(s)</h3>
-                {% for name in generic_name %}
-                    <p>- {{ name }}</p>
-                {% endfor %}
+                <ul>
+                    {% for name in generic_name %}
+                        <li>{{ name }}</li>
+                    {% endfor %}
+                </ul>
             {% endif %}
+
             {% if brand_name %}
                 <h3>Brand Name(s)</h3>
-                {% for name in brand_name %}
-                    <p>- {{ name }}</p>
-                {% endfor %}
+                <ul>
+                    {% for name in brand_name %}
+                        <li>{{ name }}</li>
+                    {% endfor %}
+                </ul>
             {% endif %}
+
             {% if substance_name %}
                 <h3>Substance Name(s)</h3>
-                {% for name in substance_name %}
-                    <p>- {{ name }}</p>
-                {% endfor %}
+                <ul>
+                    {% for name in substance_name %}
+                        <li>{{ name }}</li>
+                    {% endfor %}
+                </ul>
             {% endif %}
-        </div>
+        </section>
+
         {% if openfda %}
-            <div class="openfda-fields">
-                <h2>Technical Information</h2>
+            <section class="openfda-fields" aria-labelledby="tech-heading">
+                <h2 id="tech-heading">Technical Information</h2>
                 {% for title, content in openfda.items() %}
                     <h3>{{ title }}</h3>
                     {% if content is string %}
                         <p>{{ content }}</p>
                     {% else %}
-                        {% for item in content %}
-                            <p>- {{ item }}</p>
-                        {% endfor %}
+                        <ul>
+                            {% for item in content %}
+                                <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
                     {% endif %}
                 {% endfor %}
-            </div>
+            </section>
         {% endif %}
+
         {% if fields %}
-            <div class="medinfo-fields">
-                <h2>Details</h2>
+            <section class="medinfo-fields" aria-labelledby="details-heading">
+                <h2 id="details-heading">Details</h2>
                 {% for title, content in fields.items() %}
                     <h3>{{ title }}</h3>
                     {% if content is string %}
                         <p>{{ content }}</p>
                     {% else %}
-                        {% for item in content %}
-                            <p>- {{ item }}</p>
-                        {% endfor %}
+                        <ul>
+                            {% for item in content %}
+                                <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
                     {% endif %}
                 {% endfor %}
-            </div>
+            </section>
         {% endif %}
-    </div>
-</div>
+    </article>
+</main>
 {% endblock %}

@@ -10,18 +10,23 @@
                 type="text"
                 id="med-input"
                 placeholder="Type a medication and press Enter"
-                list="med-suggestions"
                 autocomplete="off"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded="false"
+                aria-controls="suggestions-box"
+                aria-activedescendant=""
+                aria-describedby="feedback"
             />
 
             <!-- Custom suggestion box -->
-            <ul id="suggestions-box" class="suggestions-box"></ul>
+            <ul id="suggestions-box" class="suggestions-box" role="listbox"></ul>
 
             <button type="submit" id="submit-btn">Submit</button>
         </form>
 
         <!-- Feedback message area -->
-        <div id="feedback" style="color: #999; font-size: 0.9em;"></div>
+        <div id="feedback" role="status" aria-live="polite" style="color: #999; font-size: 0.9em;"></div>
 
         <!-- List of selected medications -->
         <div class="med-list-container">

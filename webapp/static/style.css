@@ -155,3 +155,64 @@ em {
     color: #d00;
     font-weight: bold;
 }
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Accessibility Panel Styling */
+#accessibility-toggle {
+    margin: 1em;
+    padding: 0.5em 1em;
+    font-size: 1rem;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 0.5em;
+    cursor: pointer;
+}
+
+.accessibility-panel {
+    margin: 1em;
+    padding: 1em;
+    border: 2px dashed #aaa;
+    background-color: #f9f9f9;
+    border-radius: 0.5em;
+    max-width: 300px;
+}
+
+.accessibility-panel label {
+    display: block;
+    margin-bottom: 0.5em;
+    font-size: 1rem;
+}
+
+/* High Contrast Mode */
+body.high-contrast {
+    background-color: #000;
+    color: #fff;
+}
+
+body.high-contrast input,
+body.high-contrast button {
+    background-color: #000;
+    color: #fff;
+    border: 2px solid #fff;
+}
+
+/* Large Text Mode */
+body.large-text {
+    font-size: 1.25em;
+}
+
+/* Hidden utility */
+.hidden {
+    display: none;
+}
