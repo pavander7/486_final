@@ -1,59 +1,4 @@
-from es_search import search_reports
-from postgres.auth import Auth
-
-def get_characterizations(reportid):
-    """Get drugid + characterization for a report."""
-    conn = Auth.get_db_conn()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT drugid, characterization
-        FROM openfda.drugreports
-        WHERE reportid = %s
-    """, (reportid,))
-
-    results = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
-
-    return {drugid: char for drugid, char in results}
-
-def get_drugid_name_mapping():
-    """Map all drug names to drugids."""
-    conn = Auth.get_db_conn()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT drugid, name FROM openfda.medications
-    """)
-    rows = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
-
-    # name is lowercase string, drugid is int or str
-    return {name.lower(): str(drugid) for drugid, name in rows}
-
-def get_reactions_and_seriousness(reportid):
-    conn = Auth.get_db_conn()
-    cursor = conn.cursor()
-    
-    cursor.execute("""
-        SELECT seriousness FROM openfda.reports WHERE reportid = %s
-    """, (reportid,))
-    serious = cursor.fetchone()[0]
-
-    cursor.execute("""
-        SELECT reactionmeddrapt FROM openfda.reactions 
-        WHERE reportid = %s AND reactionoutcome <> 6 AND reactionoutcome IS NOT NULL
-    """, (reportid,))
-    reactions = [row[0] for row in cursor.fetchall()]
-
-    cursor.close()
-    conn.close()
-
-    return serious, reactions
+from search_functions import search_reports, get_characterizations, get_drugid_name_mapping, get_reactions_and_seriousness
 
 def execute_query(drugnames):
     """Execute semantic query over ES, enrich with metadata and drug characterization info."""
@@ -78,8 +23,8 @@ def execute_query(drugnames):
         entry["reactions"] = reactions
         entry["char_match"] = len(in_relevant) > 0  # True if any queried drug is a likely cause
 
-        all_reactions.extend(reactions)
         if entry["char_match"]:
+            all_reactions.extend(reactions)
             strong_reports.append(entry)
 
     from collections import Counter

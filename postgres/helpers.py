@@ -1,6 +1,6 @@
 # helper functions for preprocessing
 import pandas as pd
-from auth import Auth
+from postgres.auth import Auth
 
 def get_db_conn():
     return Auth.get_db_conn()

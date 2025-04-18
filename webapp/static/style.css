@@ -1,157 +1,187 @@
-/* Base layout and font */
+/* === GLOBAL STYLES === */
 body {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
-    background-color: #f8f9fa;
+    font-family: system-ui, sans-serif;
     margin: 0;
     padding: 0;
-    font-size: 1.1em;
-    color: #00274C; /* U-M Blue */
-}
-
-/* Header/nav bar */
-header {
-    background-color: #00274C; /* U-M Blue */
-    color: #FFCB05; /* Maize */
-    padding: 1em;
-    text-align: center;
-    font-size: 1.5em;
-    font-weight: bold;
-    letter-spacing: 1px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    min-height: 1.5em;
-}
-
-/* Center the whole search unit */
-main {
-    display: flex;
-    justify-content: center;
-    flex-direction: row;
-    align-items: flex-start;
-    margin-top: 4em;
-    padding: 0 1em;
-}
-
-.search_area {
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    background-color: #ffffff;
+    color: #00274C; /* UMich blue */
 }
 
-/* Search bar area */
-.search_bar {
-    display: flex;
-    gap: 10px;
-    width: 600px;
-    margin-bottom: 1em;
-    position: relative;
-}
-
-/* Input field */
-#med-input {
+main {
     flex: 1;
-    padding: 12px;
-    font-size: 1.1em;
-    border: 2px solid #00274C;
-    border-radius: 6px;
+    padding: 1rem;
+    background-color: #ffffff;
 }
 
-/* Submit button */
-#submit-btn {
-    padding: 12px 20px;
-    font-size: 1.1em;
-    background-color: #FFCB05;
-    color: #00274C;
-    border: 2px solid #00274C;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s ease;
+/* === NAVIGATION === */
+header {
+    background-color: #00274C; /* UMich blue */
+    padding: 1rem;
+    color: #FFCB05; /* Maize */
 }
 
-#submit-btn:hover {
-    background-color: #f9c425;
-}
-
-/* Suggestions box */
-.suggestions-box {
-    position: absolute;
-    top: 110%;
-    left: 0;
-    right: 0;
-    background: white;
-    border: 2px solid #00274C;
-    border-radius: 6px;
-    max-height: 180px;
-    overflow-y: auto;
-    z-index: 10;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    width: 600px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-.suggestions-box li {
-    padding: 10px 14px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1.05em;
-}
-
-.suggestions-box li.active {
-    background-color: #FFCB05;
-    color: #00274C;
-    font-weight: bold;
-}
-
-/* Medication list container */
-.med-list-container {
-    margin-top: 2em;
-    width: 32em;
-    background-color: #fff;
-    border: 2px solid #00274C;
-    border-radius: 6px;
-    padding: 1em;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-/* Medication list items */
-.med-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.med-item {
+nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #e9f0f6;
-    margin-bottom: 8px;
-    padding: 10px 14px;
-    border-left: 5px solid #00274C;
-    border-radius: 4px;
+    font-size: 1.2rem;
 }
 
-.remove-btn {
-    background: none;
-    border: none;
-    color: red;
-    font-size: 1.2em;
+nav a {
+    color: #FFCB05; /* Maize */
+    text-decoration: none;
+    padding: 0.25em 0.5em;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+/* === FOOTER === */
+footer.footer {
+    background-color: #00274C;
+    color: #FFCB05;
+    text-align: center;
+    padding: 1em;
+    font-size: 0.9rem;
+}
+
+/* === ACCESSIBILITY PANEL === */
+#accessibility-toggle {
+    margin: 1em;
+    padding: 0.5em 1em;
+    font-size: 1rem;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 0.5em;
     cursor: pointer;
 }
 
-em {
-    font-style: italic;
-    color: #555;
-    font-size: 0.9em;
+.accessibility-panel {
+    margin: 1em;
+    padding: 1em;
+    border: 2px dashed #aaa;
+    background-color: #f9f9f9;
+    border-radius: 0.5em;
+    max-width: 300px;
 }
 
-/* Feedback message */
-#feedback {
-    margin-top: 0.5em;
-    color: #d00;
-    font-weight: bold;
+.accessibility-panel label {
+    display: block;
+    margin-bottom: 0.5em;
+    font-size: 1rem;
+}
+
+/* === HIGH CONTRAST MODE === */
+body.high-contrast {
+    background-color: #000;
+    color: #fff;
+}
+
+body.high-contrast input,
+body.high-contrast button,
+body.high-contrast nav,
+body.high-contrast footer {
+    background-color: #000;
+    color: #fff;
+    border: 2px solid #fff;
+}
+
+body.high-contrast a {
+    color: #0ff;
+}
+
+/* === LARGE TEXT MODE === */
+body.large-text {
+    font-size: 1.25em;
+}
+
+/* === HIDDEN UTILITY === */
+.hidden {
+    display: none;
+}
+
+/* === FORM / SEARCH AREA === */
+.search-area {
+    max-width: 800px;
+    margin: 2em auto;
+    padding: 1em;
+}
+
+#med-input {
+    width: 100%;
+    padding: 0.5em;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 0.25em;
+}
+
+#submit-btn {
+    margin-top: 1em;
+    padding: 0.5em 1em;
+    background-color: #00274C;
+    color: #FFCB05;
+    border: none;
+    border-radius: 0.25em;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+#submit-btn:hover {
+    background-color: #001f3f;
+}
+
+/* === SUGGESTIONS BOX === */
+.suggestions-box {
+    list-style: none;
+    padding: 0;
+    margin: 0.5em 0 0 0;
+    border: 1px solid #ccc;
+    border-radius: 0.25em;
+    background: #fff;
+    max-height: 150px;
+    overflow-y: auto;
+    z-index: 10;
+}
+
+.suggestions-box li {
+    padding: 0.5em;
+    cursor: pointer;
+}
+
+.suggestions-box li:hover {
+    background-color: #f0f0f0;
+}
+
+/* === RESULT PANELS === */
+.med-list, .med-result-list, .label-warning-list, .reactions-result-list, .events-result-summary {
+    list-style: disc;
+    padding-left: 1.5em;
+}
+
+.medinfo-panel, .interaction-result-panel {
+    padding: 1em;
+    background-color: #fdfdfd;
+    border: 1px solid #ddd;
+    border-radius: 0.5em;
+}
+
+/* === HEADING OVERRIDES === */
+h1, h2, h3 {
+    color: #00274C;
+}
+
+/* === MOBILE FRIENDLY === */
+@media (max-width: 600px) {
+    nav {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .search-area {
+        padding: 1em;
+    }
 }

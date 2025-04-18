@@ -1,7 +1,7 @@
 from os import abort
 import re
 
-from flask import render_template
+from flask import render_template, redirect
 from psycopg2.extras import RealDictCursor
 
 from . import views_bp
@@ -69,3 +69,17 @@ def med_info(drugid):
 
     context = {"drug_name": drugname, "generic_name": generic_name, "brand_name": brand_name, "substance_name": substance_name, "openfda": openfda_fields, "fields": other_fields}
     return render_template('medication.html', **context)
+
+@views_bp.route("/medication-search/<drugname>", methods=["GET"])
+def med_search(drugname):
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT drugid FROM openfda.medications WHERE med_name = %s", (drugname,))
+
+    result = cursor.fetchone()[0]
+
+    if not result:
+        abort(404)
+
+    return redirect(f"/medication/{result}")

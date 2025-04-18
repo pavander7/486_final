@@ -1,6 +1,6 @@
 from flask import request, jsonify, render_template, current_app
 from . import views_bp
-from postgres.helpers import get_db_connection
+from postgres.helpers import get_db_conn
 import psycopg2
 
 @views_bp.route('/')
@@ -16,7 +16,7 @@ def autocomplete():
         return jsonify({"error": "Query parameter 'q' is required."}), 400
 
     try:
-        conn = get_db_connection()
+        conn = get_db_conn()
         cursor = conn.cursor()
         cursor.execute("""
             SELECT DISTINCT med_name, drugid, generic_name, brand_name, source

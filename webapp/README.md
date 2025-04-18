@@ -1,6 +1,6 @@
-# `webapp/` – Flask Frontend for Medication Interaction Search
+# Flask Frontend for Medication Interaction Search
 
-This package contains the web frontend of the FDA drug interaction search tool. It allows users to search for medications, view autocomplete suggestions, and submit a list of medications for interaction analysis.
+This submodule contains the web frontend of the drug interaction search tool. It allows users to search for medications, view autocomplete suggestions, and submit a list of medications for interaction analysis.
 
 ## Structure Overview
 
@@ -80,15 +80,6 @@ webapp/
 1. Ensure your PostgreSQL database is running and loaded.
 2. From the root project directory:
 
-   ```{bash}
-   flask run
-   ```
+   ```flask run```
 
 3. Navigate to [`http://localhost:5000`](http://localhost:5000) to use the interface.
-
-## Future Development
-
-- Implement interaction lookup and visualization on `/interaction-results/`
-- Add medication detail pages under `/medication/<drugid>`
-- Improve styling and accessibility
-- Add unit and integration tests

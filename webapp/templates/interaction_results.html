@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Medication Interaction Results{% endblock %}
+
+{% block content %}
+<main class="results-container" role="main">
+    <h1>Search Results</h1>
+
+    <section class="med-result-container" aria-labelledby="selected-meds-heading">
+        <h2 id="selected-meds-heading">Selected Medications</h2>
+        <ul class="med-result-list">
+            {% for d in druginfo.keys() %}
+                <li><a href="/medication-search/{{ d.name }}" target="_blank">{{ d.name }}</a></li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section class="interaction-result-panel" aria-labelledby="risks-heading">
+        <h2 id="risks-heading">Potential Risks</h2>
+
+        {% if druginfo %}
+            <section class="label-warning-container" aria-labelledby="label-warning-heading">
+                <h3 id="label-warning-heading">Label Warnings</h3>
+                <ul class="label-warning-list">
+                    {% for drugname, warning in druginfo.items() %}
+                        <li><strong>{{ drugname }}:</strong> {{ warning }}</li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+
+        {% if events_summary %}
+            <section class="events-result-container" aria-labelledby="events-summary-heading">
+                <h3 id="events-summary-heading">Adverse Events Summary</h3>
+                <ul class="events-result-summary">
+                    <li>{{ num_reports }} adverse events have been reported with at least two of the selected medications.</li>
+                    <li>{{ risk }}% of these reports indicated at least one of the selected medications as the most likely cause.</li>
+                    <li>{{ seriousness }}% of those reports resulted in serious reactions.</li>
+                </ul>
+
+                <h3>Most Common Reported Reactions</h3>
+                <ul class="reactions-result-list">
+                    {% for reaction, freq in reaction_summary %}
+                        <li>{{ reaction }} ({{ freq }} reports)</li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}
