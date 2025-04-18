@@ -31,13 +31,11 @@ function highlightSuggestion(index) {
     });
 }
 
-function addMedication(medName) {
-    const entry = medName.toLowerCase();
-    if (!entry || meds.includes(entry)) return;
+function addMedication({ name }) {
+    const entry = name.toLowerCase();
+    if (!entry || meds.some(m => m.name === entry)) return;
 
-    meds.push(entry);
-
-    const firstGeneric = entry.generic_names?.[0] || medName;
+    meds.push({ name: entry });
     const tooltip = [
         entry.generic_names.length ? `Generic: ${entry.generic_names.join(', ')}` : '',
         entry.brand_names.length ? `Brand: ${entry.brand_names.join(', ')}` : ''
@@ -47,15 +45,13 @@ function addMedication(medName) {
     li.className = 'med-item';
     li.title = tooltip;
     li.innerHTML = `
-        <span>
-            ${firstGeneric}
-        </span>
+        <a href="/medication-search/${name}" target="_blank">${name}</a>
         <button class="remove-btn" aria-label="Remove">✖</button>
     `;
 
     li.querySelector('.remove-btn').addEventListener('click', () => {
         medList.removeChild(li);
-        const index = meds.indexOf(entry);
+        const index = meds.findIndex(m => m.name === entry);
         if (index !== -1) meds.splice(index, 1);
     });
 
@@ -63,7 +59,6 @@ function addMedication(medName) {
     medInput.value = '';
     clearSuggestions();
 }
-
 
 medInput.addEventListener('input', async function () {
     const query = medInput.value.trim();
@@ -85,7 +80,17 @@ medInput.addEventListener('input', async function () {
                 const li = document.createElement('li');
                 li.id = `suggestion-${idx}`;
                 li.setAttribute('role', 'option');
-                // ... rest of your code
+                
+                li.innerHTML = `
+                    <span class="source-tag">${source}</span>
+                    <a href="/medication-search/${med_name}" target="_blank">${med_name}</a>
+                `;
+                
+                li.addEventListener('click', () => {
+                    addMedication({ name: med_name });
+                });
+            
+                suggestionsBox.appendChild(li);
             });
             medInput.setAttribute('aria-expanded', 'true');                      
         } else {
@@ -114,8 +119,10 @@ medInput.addEventListener('keydown', function (e) {
         const selected = items[activeIndex];
         if (selected) {
             e.preventDefault();
-            const name = selected.querySelector('span:nth-child(2)').textContent;
-            addMedication(name);
+            const anchor = selected.querySelector('a');
+            if (anchor) {
+                addMedication({ name: anchor.textContent, drugid: anchor.href.split('/').pop() });
+            }
         } else {
             const medName = medInput.value.trim();
             if (medName) {
@@ -125,7 +132,6 @@ medInput.addEventListener('keydown', function (e) {
         }
     } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault();
-        hiddenMeds.value = JSON.stringify(meds);
         medForm.submit();
     } else if (e.key === 'Escape') {
         clearSuggestions();

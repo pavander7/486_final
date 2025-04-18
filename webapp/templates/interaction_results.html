@@ -10,7 +10,7 @@
         <h2 id="selected-meds-heading">Selected Medications</h2>
         <ul class="med-result-list">
             {% for d in druginfo.keys() %}
-                <li>{{ d.name }}</li>
+                <li><a href="/medication-search/{{ d.name }}" target="_blank">{{ d.name }}</a></li>
             {% endfor %}
         </ul>
     </section>
